@@ -27,6 +27,8 @@ abstract class FluttereniumPlatform extends PlatformInterface {
   @protected
   late WidgetsBinding binding;
 
+  final eventName = 'flutterenium';
+
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }

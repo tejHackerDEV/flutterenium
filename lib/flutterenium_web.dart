@@ -3,6 +3,8 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:js_interop';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart' as web;
@@ -28,5 +30,14 @@ class FluttereniumWeb extends FluttereniumPlatform {
   @override
   void ensureInitialized() {
     binding = WidgetsFlutterBinding.ensureInitialized();
+    web.window.addEventListener(
+      eventName,
+      (web.Event event) {
+        if (event is! web.CustomEvent) {
+          return;
+        }
+        print(event.detail);
+      }.toJS,
+    );
   }
 }
