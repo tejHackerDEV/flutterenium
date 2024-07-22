@@ -1,4 +1,5 @@
 import 'flutterenium_platform_interface.dart';
+export 'src/index.dart';
 
 class Flutterenium {
   Future<String?> getPlatformVersion() {
