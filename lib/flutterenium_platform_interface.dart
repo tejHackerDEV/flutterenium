@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutterenium_method_channel.dart';
@@ -23,7 +24,14 @@ abstract class FluttereniumPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  @protected
+  late WidgetsBinding binding;
+
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  void ensureInitialized() {
+    throw UnimplementedError('ensureInitialized() has not been implemented.');
   }
 }

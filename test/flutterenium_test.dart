@@ -1,3 +1,4 @@
+import 'package:flutter/src/widgets/binding.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutterenium/flutterenium.dart';
 import 'package:flutterenium/flutterenium_platform_interface.dart';
@@ -7,9 +8,16 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockFluttereniumPlatform
     with MockPlatformInterfaceMixin
     implements FluttereniumPlatform {
+  @override
+  late WidgetsBinding binding;
 
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  void ensureInitialized() {
+    // TODO: implement ensureInitialized
+  }
 }
 
 void main() {
