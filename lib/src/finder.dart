@@ -22,7 +22,13 @@ class Finder {
         result = visitor;
       }
     }
-    return result ?? _findByText(text, visitor);
+    if (result == null) {
+      // as result not found, recursively check for it
+      visitor.visitChildren((visitor) {
+        result ??= _findByText(text, visitor);
+      });
+    }
+    return result;
   }
 
   /// Finds an [Element] if the `text` it is rendering
@@ -42,7 +48,13 @@ class Finder {
     if (visitor.widget.label == label) {
       result = visitor;
     }
-    return result ?? _findByLabel(label, visitor);
+    if (result == null) {
+      // as result not found, recursively check for it
+      visitor.visitChildren((visitor) {
+        result ??= _findByLabel(label, visitor);
+      });
+    }
+    return result;
   }
 
   /// Finds an [Element] if the `label` it is assigned
