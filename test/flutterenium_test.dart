@@ -12,7 +12,10 @@ class MockFluttereniumPlatform
   late WidgetsBinding binding;
 
   @override
-  String get eventName => 'flutterenium';
+  String get requestEventName => 'ext.flutterenium.request';
+
+  @override
+  String get responseEventName => 'ext.flutterenium.response';
 
   @override
   Future<String?> getPlatformVersion() => Future.value('42');

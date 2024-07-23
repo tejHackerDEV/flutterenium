@@ -38,13 +38,16 @@ class FluttereniumWeb extends FluttereniumPlatform {
     if (event is! web.CustomEvent) {
       return;
     }
-    final jsonArray = jsonDecode(jsonEncode(event.detail.dartify()));
-    if (jsonArray is! List) {
+    final json = jsonDecode(jsonEncode(event.detail.dartify()));
+    if (json is! Map) {
       return;
     }
+    final id = json['id'];
+    final actionsArray = json['actions'];
+    bool didSucceeded = false;
     Element? element;
-    for (int i = 0; i < jsonArray.length; ++i) {
-      final action = Action.fromJson(jsonArray[i]);
+    for (int i = 0; i < actionsArray.length; ++i) {
+      final action = Action.fromJson(actionsArray[i]);
       if (i == 0) {
         // first index should always be a `find`
         if (action is! FindAction) {
@@ -56,6 +59,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
           FindByLabelAction() => _finder.findByLabel(action.label),
           FindByTextAction() => _finder.findByText(action.text),
         };
+        didSucceeded = element != null;
         continue;
       }
       if (element == null) {
@@ -64,6 +68,16 @@ class FluttereniumWeb extends FluttereniumPlatform {
         );
       }
     }
+    web.window.dispatchEvent(
+      web.CustomEvent(
+        '$responseEventName-$id',
+        web.CustomEventInit(
+          detail: {
+            'didSucceeded': didSucceeded,
+          }.jsify(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -79,13 +93,14 @@ class FluttereniumWeb extends FluttereniumPlatform {
       // for plugins.
       //
       // https://github.com/flutter/flutter/issues/10437
-      final previousHandler =
-          web.window.getProperty<js_interop.JSFunction?>(eventName.toJS);
+      final previousHandler = web.window.getProperty<js_interop.JSFunction?>(
+        requestEventName.toJS,
+      );
       web.window
-        ..removeEventListener(eventName, previousHandler)
-        ..setProperty(eventName.toJS, eventHandler);
+        ..removeEventListener(requestEventName, previousHandler)
+        ..setProperty(requestEventName.toJS, eventHandler);
       return true;
     }());
-    web.window.addEventListener(eventName, eventHandler);
+    web.window.addEventListener(requestEventName, eventHandler);
   }
 }
