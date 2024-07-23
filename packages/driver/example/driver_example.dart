@@ -1,6 +1,8 @@
 import 'package:driver/driver.dart';
 
 void main() {
-  var awesome = Awesome();
-  print('awesome: ${awesome.isAwesome}');
+  FluttereniumDriver.init(
+    '/*Path to the chrome driver*/',
+    DriverType.chrome,
+  );
 }
