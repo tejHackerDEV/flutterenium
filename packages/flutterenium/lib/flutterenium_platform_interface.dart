@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -27,6 +28,8 @@ abstract class FluttereniumPlatform extends PlatformInterface {
   @protected
   late WidgetsBinding binding;
 
+  final readyEventName = 'ext.flutterenium.ready';
+
   final requestEventName = 'ext.flutterenium.request';
 
   final responseEventName = 'ext.flutterenium.response';
@@ -35,7 +38,15 @@ abstract class FluttereniumPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
+  @protected
+  @mustCallSuper
+  void onReady() {}
+
+  @mustCallSuper
   void ensureInitialized() {
-    throw UnimplementedError('ensureInitialized() has not been implemented.');
+    binding = WidgetsFlutterBinding.ensureInitialized();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      onReady();
+    });
   }
 }

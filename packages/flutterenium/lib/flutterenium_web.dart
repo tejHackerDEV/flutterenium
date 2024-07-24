@@ -81,8 +81,14 @@ class FluttereniumWeb extends FluttereniumPlatform {
   }
 
   @override
+  void onReady() {
+    super.onReady();
+    web.window.dispatchEvent(web.CustomEvent(readyEventName));
+  }
+
+  @override
   void ensureInitialized() {
-    binding = WidgetsFlutterBinding.ensureInitialized();
+    super.ensureInitialized();
     _finder = Finder(binding);
     final eventHandler = _eventHandler.toJS;
     assert(() {

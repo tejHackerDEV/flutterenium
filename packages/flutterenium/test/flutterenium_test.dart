@@ -12,6 +12,9 @@ class MockFluttereniumPlatform
   late WidgetsBinding binding;
 
   @override
+  String get readyEventName => 'ext.flutterenium.ready';
+
+  @override
   String get requestEventName => 'ext.flutterenium.request';
 
   @override
@@ -19,6 +22,11 @@ class MockFluttereniumPlatform
 
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  void onReady() {
+    // TODO: implement onReady
+  }
 
   @override
   void ensureInitialized() {
