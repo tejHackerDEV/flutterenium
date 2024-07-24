@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
           title: const Text('Fluttereium Plugin example app'),
         ),
         body: const Center(
-          child: Text('Test the fluttereium plugin'),
+          child: Text('Test the flutterenium plugin'),
         ),
       ),
     );

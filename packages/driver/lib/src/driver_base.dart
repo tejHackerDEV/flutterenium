@@ -1,8 +1,13 @@
 import 'dart:io' as io;
 
+import 'package:slugid/slugid.dart';
 import 'package:webdriver/sync_io.dart' as web_driver;
 
+import 'element.dart';
+
 const _kChromeUrlBase = 'wd/hub';
+const _kFluttereniumRequestEventName = 'ext.flutterenium.request';
+const _kFluttereniumResponseEventName = 'ext.flutterenium.response';
 
 enum DriverType {
   chrome(4444),
@@ -69,5 +74,64 @@ class FluttereniumDriver {
     }
     _driver.quit(closeSession: true);
     _process.kill();
+  }
+
+  String _generateUUID() {
+    return Slugid.nice().uuid();
+  }
+
+  /// This is the heart of entire driver.
+  ///
+  /// <br>
+  /// Performs the specified [action] by establishing
+  /// the connection with the `Flutter` app using `Flutterenium`.
+  /// Returns `true` along with some data if returned by `Flutterenium`
+  /// if the action is successfull, else returns `false` followed by `null`
+  Future<(bool, Map<String, dynamic>?)> _executeAction(
+    Element element, [
+    Map<String, dynamic>? action,
+  ]) async {
+    final Map<String, dynamic> response = await _driver.executeAsync(
+      '''
+          const uuid = arguments[0];
+          const requestEventName = arguments[1];
+          const responseEventName = arguments[2];
+          const actionsToExecute = arguments[3];
+          const callback = arguments[arguments.length - 1];
+          window.addEventListener(responseEventName + '-' + uuid, (event) => {
+            callback(event.detail);
+          }, {once: true});
+          window.dispatchEvent(
+            new CustomEvent(
+              requestEventName,
+              {
+                detail: {
+                  "id": uuid,
+                  "actions": actionsToExecute
+                }
+              }
+            )
+          );
+      ''',
+      [
+        _generateUUID(),
+        _kFluttereniumRequestEventName,
+        _kFluttereniumResponseEventName,
+        [element.toFindAction(), if (action != null) action],
+      ],
+    );
+    final bool didSucceeded = response['didSucceeded'];
+    Map<String, dynamic>? data;
+    if (didSucceeded) {
+      data = response['data'];
+    }
+    return (didSucceeded, data);
+  }
+
+  /// Finds the specified [element] & return `true`
+  /// if found, else `false`
+  Future<bool> find(Element element) async {
+    final (didSucceeded, _) = await _executeAction(element);
+    return didSucceeded;
   }
 }
