@@ -45,7 +45,7 @@ abstract class FluttereniumPlatform extends PlatformInterface {
   @mustCallSuper
   void ensureInitialized() {
     binding = WidgetsFlutterBinding.ensureInitialized();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    binding.endOfFrame.then((_) {
       onReady();
     });
   }
