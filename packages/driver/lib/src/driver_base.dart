@@ -87,11 +87,11 @@ class FluttereniumDriver {
   /// the connection with the `Flutter` app using `Flutterenium`.
   /// Returns `true` along with some data if returned by `Flutterenium`
   /// if the action is successfull, else returns `false` followed by `null`
-  Future<(bool, Map<String, dynamic>?)> _executeAction(
+  Future<(bool, Map?)> _executeAction(
     Element element, [
     Map<String, dynamic>? action,
   ]) async {
-    final Map<String, dynamic> response = await _driver.executeAsync(
+    final Map response = await _driver.executeAsync(
       '''
           const uuid = arguments[0];
           const requestEventName = arguments[1];
@@ -121,7 +121,7 @@ class FluttereniumDriver {
       ],
     );
     final bool didSucceeded = response['didSucceeded'];
-    Map<String, dynamic>? data;
+    Map? data;
     if (didSucceeded) {
       data = response['data'];
     }
