@@ -14,7 +14,6 @@ import 'package:web/web.dart' as web;
 
 import 'flutterenium_platform_interface.dart';
 import 'src/actions/index.dart';
-import 'src/index.dart';
 
 /// A web implementation of the FluttereniumPlatform of the Flutterenium plugin.
 class FluttereniumWeb extends FluttereniumPlatform {
@@ -24,8 +23,6 @@ class FluttereniumWeb extends FluttereniumPlatform {
   static void registerWith(Registrar registrar) {
     FluttereniumPlatform.instance = FluttereniumWeb();
   }
-
-  late Finder _finder;
 
   /// Returns a [String] containing the version of the platform.
   @override
@@ -56,13 +53,11 @@ class FluttereniumWeb extends FluttereniumPlatform {
             'First action should start awalys be an `Find`',
           );
         }
-        element = switch (action) {
-          FindByLabelAction() => _finder.findByLabel(action.label),
-          FindByTextAction() => _finder.findByText(action.text),
-        };
+        element = action.execute(binding);
         didSucceeded = element != null;
         continue;
       }
+
       if (element == null) {
         throw UnsupportedError(
           'Something went wrong while executing `FindAction`, because element cannot be null at this point',
