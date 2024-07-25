@@ -70,9 +70,10 @@ class FluttereniumWeb extends FluttereniumPlatform {
     }
     web.window.dispatchEvent(
       web.CustomEvent(
-        '$responseEventName-$id',
+        responseEventName,
         web.CustomEventInit(
           detail: {
+            'id': id,
             'didSucceeded': didSucceeded,
           }.jsify(),
         ),
