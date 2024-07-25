@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 extension WidgetExtension on Widget {
@@ -10,4 +11,23 @@ extension WidgetExtension on Widget {
   String? get label => _expando[this];
 
   set label(String? value) => _expando[this] = value;
+}
+
+extension RenderParagraphExtension on RenderParagraph {
+  String toPlainText() {
+    return text.toPlainText(
+      includeSemanticsLabels: false,
+      includePlaceholders: false,
+    );
+  }
+}
+
+extension RenderEditableExtension on RenderEditable {
+  String toPlainText() {
+    return text?.toPlainText(
+          includeSemanticsLabels: false,
+          includePlaceholders: false,
+        ) ??
+        '';
+  }
 }

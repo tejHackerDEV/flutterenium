@@ -1,4 +1,5 @@
 import 'find.dart';
+import 'get_text.dart';
 
 class Action {
   const Action();
@@ -6,6 +7,7 @@ class Action {
   factory Action.fromJson(Map<String, dynamic> json) {
     return switch (json['type']) {
       'find' => FindAction.fromJson(json['data']),
+      'get_text' => const GetTextAction(),
       _ => throw UnimplementedError(),
     };
   }

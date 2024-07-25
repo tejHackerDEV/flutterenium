@@ -45,6 +45,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
     final id = json['id'];
     final actionsArray = json['actions'];
     bool didSucceeded = false;
+    final response = <String, dynamic>{};
     Element? element;
     for (int i = 0; i < actionsArray.length; ++i) {
       final action = Action.fromJson(actionsArray[i]);
@@ -67,6 +68,15 @@ class FluttereniumWeb extends FluttereniumPlatform {
           'Something went wrong while executing `FindAction`, because element cannot be null at this point',
         );
       }
+      switch (action) {
+        case FindAction():
+          throw UnsupportedError(
+            'Only first action should be an `Find`',
+          );
+        case GetTextAction():
+          response['text'] = action.execute(element);
+          break;
+      }
     }
     web.window.dispatchEvent(
       web.CustomEvent(
@@ -75,6 +85,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
           detail: {
             'id': id,
             'didSucceeded': didSucceeded,
+            if (didSucceeded) 'data': response,
           }.jsify(),
         ),
       ),
