@@ -194,4 +194,18 @@ class FluttereniumDriver {
     final (didSucceeded, _) = await _executeAction(element);
     return didSucceeded;
   }
+
+  /// Get's the text of specified [element] & return it
+  /// if found, else `null`
+  Future<String?> getText(Element element) async {
+    final (didSucceeded, data) = await _executeAction(
+      element,
+      element.toGetTextAction(),
+    );
+    String? text;
+    if (didSucceeded) {
+      text = data!['text'];
+    }
+    return text;
+  }
 }

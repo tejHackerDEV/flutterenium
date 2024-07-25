@@ -36,4 +36,10 @@ class Element {
       }
     };
   }
+
+  Map<String, dynamic> toGetTextAction() {
+    return {
+      "type": "get_text",
+    };
+  }
 }
