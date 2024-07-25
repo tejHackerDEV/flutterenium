@@ -1,11 +1,9 @@
-import 'dart:io' as io;
+import 'dart:async';
 
 import 'package:slugid/slugid.dart';
-import 'package:webdriver/sync_io.dart' as web_driver;
+import 'package:puppeteer/puppeteer.dart' as web_driver;
 
 import 'element.dart';
-
-const _kChromeUrlBase = 'wd/hub';
 
 const _kFluttereniumReadyEventName = 'ext.flutterenium.ready';
 const _kFluttereniumRequestEventName = 'ext.flutterenium.request';
@@ -14,90 +12,83 @@ const _kFluttereniumResponseEventName = 'ext.flutterenium.response';
 const _kFluttereniumDriverReadyName = 'ext_flutterenium_driver_ready';
 const _kFluttereniumDriverEventLogsName = 'ext_flutterenium_driver_logs';
 
-enum DriverType {
-  chrome(4444),
-  firefox(4445);
-
-  final int portNumber;
-
-  const DriverType(this.portNumber);
-}
-
 class FluttereniumDriver {
-  /// Holds the process in which [_driver] created
-  final io.Process _process;
+  final web_driver.Browser _driver;
 
-  final web_driver.WebDriver _driver;
+  const FluttereniumDriver._(this._driver);
 
-  const FluttereniumDriver._(this._process, this._driver);
-
-  static Future<FluttereniumDriver> init(String path, DriverType type) async {
-    final Uri driverUri;
-    final web_driver.WebDriverSpec driverSpec;
-    final arguments = <String>[];
-    switch (type) {
-      case DriverType.chrome:
-        driverUri = Uri.parse(
-          'http://127.0.0.1:${type.portNumber}/$_kChromeUrlBase/',
-        );
-        driverSpec = web_driver.WebDriverSpec.JsonWire;
-        arguments
-          ..add('--port=${type.portNumber}')
-          ..add('--url-base=$_kChromeUrlBase')
-          ..add('--verbose');
-        break;
-      case DriverType.firefox:
-        driverUri = Uri.parse('http://127.0.0.1:${type.portNumber}/');
-        driverSpec = web_driver.WebDriverSpec.W3c;
-        arguments.add('--port=${type.portNumber}');
-        break;
-    }
-    final process = await io.Process.start(path, arguments);
-    final driver = web_driver.createDriver(
-      uri: driverUri,
-      spec: driverSpec,
+  static Future<FluttereniumDriver> init(String path) async {
+    final driver = await web_driver.puppeteer.launch(
+      executablePath: path,
+      headless: false,
     );
-    return FluttereniumDriver._(process, driver);
+    return FluttereniumDriver._(driver);
+  }
+
+  Future<web_driver.Page?> get _currentPage async {
+    final pages = await _driver.pages;
+    if (pages.isEmpty) {
+      return null;
+    }
+    return pages.last;
+  }
+
+  /// Executes the [script] with the [args] on the specified [page]
+  ///
+  /// <br>
+  /// Even though this fucntion takes [page] as nullable object,
+  /// in the declaration it expects it should be non-nullable.
+  /// So one should be careful while passing arguments to this.
+  Future<T> _executeScript<T>(
+    FutureOr<web_driver.Page?> page,
+    String script, [
+    List<dynamic>? args,
+  ]) async {
+    // Without `trimming` the script, driver is unable to execute it
+    // in some cases, so for safe side `trimming` every script.
+    // We need to open an issue in `Puppeteer` repo
+    return (await page)!.evaluate<T>(script.trim(), args: args);
   }
 
   /// Opens the specified [uri] in the browser,
   /// if the browser is not running. Else open
-  /// it in the current window that is showing
-  Future<void> open(Uri uri) async {
-    _driver
-      ..get(uri)
-      ..execute(
-        '''
-        const readyEventName = arguments[0];
-        const driverReadyName = arguments[1];
-        window.addEventListener(readyEventName, (event) => {
-          window[driverReadyName] = true;
-        }, {once: true});
-      ''',
-        [
-          _kFluttereniumReadyEventName,
-          _kFluttereniumDriverReadyName,
-        ],
-      );
-    bool? isReady;
-    do {
-      // No idea without dealy it is not working, may be an issue
-      // with `WebDriver`, need to raise an issue in their repo.
-      await Future.delayed(const Duration(milliseconds: 500));
-      isReady = _driver.execute(
-        '''
-          const driverReadyName = arguments[0];
-          console.log(driverReadyName);
-          return window[driverReadyName];
-        ''',
-        [_kFluttereniumDriverReadyName],
-      );
-    } while (isReady != true);
-    _driver.execute(
+  /// it in the current window that is showing.
+  ///
+  /// If this function returns `false`, it means
+  /// it is not guarenteed even the page opened
+  /// the actions that were going to perform will
+  /// succeed. So one needs to check the result
+  /// of this function before performing any actions.
+  Future<bool> open(Uri uri) async {
+    final page = (await _currentPage) ?? await _driver.newPage();
+    final response = await page.goto(uri.toString());
+    if (!response.ok) {
+      return false;
+    }
+    final isReady = await _executeScript<bool>(
+      page,
       '''
-          const eventLogsName = arguments[0];
-          const responseEventName = arguments[1];
-
+        (readyEventName, driverReadyName) => {
+          return new Promise((resolve, reject) => {
+            window.addEventListener(readyEventName, (event) => {
+              window[driverReadyName] = true;
+              resolve(true);
+            }, {once: true});
+          });
+        }
+      ''',
+      [
+        _kFluttereniumReadyEventName,
+        _kFluttereniumDriverReadyName,
+      ],
+    );
+    if (!isReady) {
+      return false;
+    }
+    await _executeScript(
+      page,
+      '''
+        (eventLogsName, responseEventName) => {
           // All the event log responses happens via the driver
           // will be flushed into the below object
           window[eventLogsName] = {};
@@ -105,26 +96,27 @@ class FluttereniumDriver {
             const {id, ...rest} = event.detail;
             window[eventLogsName][id] = rest;
           });
+        }
       ''',
       [
         _kFluttereniumDriverEventLogsName,
         _kFluttereniumResponseEventName,
       ],
     );
+    return true;
   }
 
-  /// Closes the current window by default.
+  /// Closes the current page by default.
   ///
   /// <br>
   /// If [withBrowser] is set to `true` then complete browser will close
   /// along with the process in which the driver is running
-  void close({bool withBrowser = false}) {
+  Future<void> close({bool withBrowser = false}) async {
     if (!withBrowser) {
-      _driver.window.close();
+      (await _currentPage)!.close();
       return;
     }
-    _driver.quit(closeSession: true);
-    _process.kill();
+    await _driver.close();
   }
 
   String _generateUUID() {
@@ -143,11 +135,10 @@ class FluttereniumDriver {
     Map<String, dynamic>? action,
   ]) async {
     final uuid = _generateUUID();
-    _driver.execute(
+    await _executeScript(
+      _currentPage,
       '''
-          const uuid = arguments[0];
-          const requestEventName = arguments[1];
-          const actionsToExecute = arguments[2];
+        (uuid, requestEventName, actionsToExecute) => {
           window.dispatchEvent(
             new CustomEvent(
               requestEventName,
@@ -159,6 +150,7 @@ class FluttereniumDriver {
               }
             )
           );
+        }
       ''',
       [
         uuid,
@@ -168,11 +160,12 @@ class FluttereniumDriver {
     );
     Map? response;
     do {
-      response = _driver.execute(
+      response = await _executeScript(
+        _currentPage,
         '''
-          const uuid = arguments[0];
-          const eventLogsName = arguments[1];
-          return window[eventLogsName][uuid];
+          (uuid, eventLogsName) => {
+            return window[eventLogsName][uuid];
+          }
         ''',
         [
           uuid,
