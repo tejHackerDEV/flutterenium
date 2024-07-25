@@ -8,6 +8,7 @@ import 'element.dart';
 const _kChromeUrlBase = 'wd/hub';
 const _kFluttereniumRequestEventName = 'ext.flutterenium.request';
 const _kFluttereniumResponseEventName = 'ext.flutterenium.response';
+const _kFluttereniumDriverEventLogs = 'ext_flutterenium_driver_logs';
 
 enum DriverType {
   chrome(4444),
@@ -59,7 +60,26 @@ class FluttereniumDriver {
   /// if the browser is not running. Else open
   /// it in the current window that is showing
   void open(Uri uri) {
-    _driver.get(uri);
+    _driver
+      ..get(uri)
+      ..execute(
+        '''
+          const eventLogsName = arguments[0];
+          const responseEventName = arguments[1];
+
+          // All the event log responses happens via the driver
+          // will be flushed into the below object
+          window[eventLogsName] = {};
+          window.addEventListener(responseEventName, (event) => {
+            const {id, ...rest} = event.detail;
+            window[eventLogsName][id] = rest;
+          });
+      ''',
+        [
+          _kFluttereniumDriverEventLogs,
+          _kFluttereniumResponseEventName,
+        ],
+      );
   }
 
   /// Closes the current window by default.
@@ -91,16 +111,12 @@ class FluttereniumDriver {
     Element element, [
     Map<String, dynamic>? action,
   ]) async {
-    final Map response = await _driver.executeAsync(
+    final uuid = _generateUUID();
+    _driver.execute(
       '''
           const uuid = arguments[0];
           const requestEventName = arguments[1];
-          const responseEventName = arguments[2];
-          const actionsToExecute = arguments[3];
-          const callback = arguments[arguments.length - 1];
-          window.addEventListener(responseEventName + '-' + uuid, (event) => {
-            callback(event.detail);
-          }, {once: true});
+          const actionsToExecute = arguments[2];
           window.dispatchEvent(
             new CustomEvent(
               requestEventName,
@@ -114,12 +130,25 @@ class FluttereniumDriver {
           );
       ''',
       [
-        _generateUUID(),
+        uuid,
         _kFluttereniumRequestEventName,
-        _kFluttereniumResponseEventName,
         [element.toFindAction(), if (action != null) action],
       ],
     );
+    Map? response;
+    do {
+      response = _driver.execute(
+        '''
+          const uuid = arguments[0];
+          const eventLogsName = arguments[1];
+          return window[eventLogsName][uuid];
+        ''',
+        [
+          uuid,
+          _kFluttereniumDriverEventLogs,
+        ],
+      );
+    } while (response == null);
     final bool didSucceeded = response['didSucceeded'];
     Map? data;
     if (didSucceeded) {
