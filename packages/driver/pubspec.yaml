@@ -8,7 +8,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  webdriver: ^3.0.3
+  puppeteer: ^3.12.0
   slugid: ^1.1.2
 
 dev_dependencies:
