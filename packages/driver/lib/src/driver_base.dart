@@ -6,9 +6,13 @@ import 'package:webdriver/sync_io.dart' as web_driver;
 import 'element.dart';
 
 const _kChromeUrlBase = 'wd/hub';
+
+const _kFluttereniumReadyEventName = 'ext.flutterenium.ready';
 const _kFluttereniumRequestEventName = 'ext.flutterenium.request';
 const _kFluttereniumResponseEventName = 'ext.flutterenium.response';
-const _kFluttereniumDriverEventLogs = 'ext_flutterenium_driver_logs';
+
+const _kFluttereniumDriverReadyName = 'ext_flutterenium_driver_ready';
+const _kFluttereniumDriverEventLogsName = 'ext_flutterenium_driver_logs';
 
 enum DriverType {
   chrome(4444),
@@ -59,11 +63,38 @@ class FluttereniumDriver {
   /// Opens the specified [uri] in the browser,
   /// if the browser is not running. Else open
   /// it in the current window that is showing
-  void open(Uri uri) {
+  Future<void> open(Uri uri) async {
     _driver
       ..get(uri)
       ..execute(
         '''
+        const readyEventName = arguments[0];
+        const driverReadyName = arguments[1];
+        window.addEventListener(readyEventName, (event) => {
+          window[driverReadyName] = true;
+        }, {once: true});
+      ''',
+        [
+          _kFluttereniumReadyEventName,
+          _kFluttereniumDriverReadyName,
+        ],
+      );
+    bool? isReady;
+    do {
+      // No idea without dealy it is not working, may be an issue
+      // with `WebDriver`, need to raise an issue in their repo.
+      await Future.delayed(const Duration(milliseconds: 500));
+      isReady = _driver.execute(
+        '''
+          const driverReadyName = arguments[0];
+          console.log(driverReadyName);
+          return window[driverReadyName];
+        ''',
+        [_kFluttereniumDriverReadyName],
+      );
+    } while (isReady != true);
+    _driver.execute(
+      '''
           const eventLogsName = arguments[0];
           const responseEventName = arguments[1];
 
@@ -75,11 +106,11 @@ class FluttereniumDriver {
             window[eventLogsName][id] = rest;
           });
       ''',
-        [
-          _kFluttereniumDriverEventLogs,
-          _kFluttereniumResponseEventName,
-        ],
-      );
+      [
+        _kFluttereniumDriverEventLogsName,
+        _kFluttereniumResponseEventName,
+      ],
+    );
   }
 
   /// Closes the current window by default.
@@ -145,7 +176,7 @@ class FluttereniumDriver {
         ''',
         [
           uuid,
-          _kFluttereniumDriverEventLogs,
+          _kFluttereniumDriverEventLogsName,
         ],
       );
     } while (response == null);
