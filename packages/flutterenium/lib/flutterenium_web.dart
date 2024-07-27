@@ -102,7 +102,6 @@ class FluttereniumWeb extends FluttereniumPlatform {
   @override
   void ensureInitialized() {
     super.ensureInitialized();
-    _finder = Finder(binding);
     final eventHandler = _eventHandler.toJS;
     assert(() {
       // This code will only run in debugMode, so that upon Hot-Restart
