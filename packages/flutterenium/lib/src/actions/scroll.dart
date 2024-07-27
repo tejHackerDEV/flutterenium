@@ -60,7 +60,16 @@ class ScrollAction extends Action {
       // 4. Finally, dispose our controller
       final scrollController = ScrollController(debugLabel: _kDebugLabel);
       scrollController.attach(scrollableState.position);
-      final offset = scrollController.offset + by;
+      final double offset;
+      if (by == 0) {
+        // scroll to very top
+        offset = scrollController.position.minScrollExtent;
+      } else if (by == -1) {
+        // scroll to very bottom
+        offset = scrollController.position.maxScrollExtent;
+      } else {
+        offset = scrollController.offset + by;
+      }
       if (milliseconds == null) {
         scrollController.jumpTo(offset);
       } else {
