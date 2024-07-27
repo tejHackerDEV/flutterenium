@@ -69,7 +69,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
             'Only first action should be an `Find`',
           );
         case GetTextAction():
-          response['text'] = action.execute(element);
+          response['text'] = action.execute(binding, element);
           break;
         case SetTextAction():
           didSucceeded = action.execute(binding, element);
