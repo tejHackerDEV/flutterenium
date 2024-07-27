@@ -201,4 +201,14 @@ class FluttereniumDriver {
     }
     return text;
   }
+
+  /// Set the [text] for specified [element] & return
+  /// `true` if succeeded, else `false`
+  Future<bool> setText(Element element, String text) async {
+    final (didSucceeded, _) = await _executeAction(
+      element,
+      element.toSetTextAction(text),
+    );
+    return didSucceeded;
+  }
 }

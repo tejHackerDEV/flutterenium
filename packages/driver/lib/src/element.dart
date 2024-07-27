@@ -42,4 +42,13 @@ class Element {
       "type": "get_text",
     };
   }
+
+  Map<String, dynamic> toSetTextAction(String text) {
+    return {
+      "type": "set_text",
+      "data": {
+        "text": text,
+      },
+    };
+  }
 }
