@@ -71,6 +71,9 @@ class FluttereniumWeb extends FluttereniumPlatform {
         case GetTextAction():
           response['text'] = action.execute(element);
           break;
+        case SetTextAction():
+          didSucceeded = action.execute(element);
+          break;
       }
     }
     web.window.dispatchEvent(
