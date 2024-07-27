@@ -1,21 +1,22 @@
 import 'package:flutter/widgets.dart' hide Action;
-import 'package:flutterenium/src/actions/index.dart';
 
 import 'action.dart';
+import 'find.dart';
 
 class SetTextAction extends Action {
-  const SetTextAction(this.text);
+  const SetTextAction(this.text) : _finder = const FindByWidget();
 
   factory SetTextAction.fromJson(Map<String, dynamic> json) {
     return SetTextAction(json['text']);
   }
 
   final String text;
+  final FindByWidget<EditableText> _finder;
 
-  bool execute(Element element) {
+  bool execute(WidgetsBinding binding, Element element) {
     bool didSucceeded = false;
-    final widget = element.widget;
-    if (widget is EditableText) {
+    final widget = _finder.find(binding, root: element);
+    if (widget != null) {
       widget.controller.text = text;
       didSucceeded = true;
     }

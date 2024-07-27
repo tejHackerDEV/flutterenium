@@ -72,7 +72,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
           response['text'] = action.execute(element);
           break;
         case SetTextAction():
-          didSucceeded = action.execute(element);
+          didSucceeded = action.execute(binding, element);
           break;
       }
     }

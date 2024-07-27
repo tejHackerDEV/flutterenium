@@ -27,7 +27,7 @@ class FindByLabelAction extends FindAction {
     return FindByLabelAction(json['label']);
   }
 
-  Element? _findByLabel(String label, Element? visitor) {
+  Element? _find(Element? visitor) {
     if (visitor == null) {
       return null;
     }
@@ -38,7 +38,7 @@ class FindByLabelAction extends FindAction {
     if (result == null) {
       // as result not found, recursively check for it
       visitor.visitChildren((visitor) {
-        result ??= _findByLabel(label, visitor);
+        result ??= _find(visitor);
       });
     }
     return result;
@@ -51,7 +51,7 @@ class FindByLabelAction extends FindAction {
   /// If no matches returns `null`.
   @override
   Element? execute(WidgetsBinding binding) {
-    return _findByLabel(label, binding.rootElement);
+    return _find(binding.rootElement);
   }
 }
 
@@ -64,7 +64,7 @@ class FindByTextAction extends FindAction {
     return FindByTextAction(json['text']);
   }
 
-  Element? _findByText(String text, Element? visitor) {
+  Element? _find(Element? visitor) {
     if (visitor == null) {
       return null;
     }
@@ -79,7 +79,7 @@ class FindByTextAction extends FindAction {
     if (result == null) {
       // as result not found, recursively check for it
       visitor.visitChildren((visitor) {
-        result ??= _findByText(text, visitor);
+        result ??= _find(visitor);
       });
     }
     return result;
@@ -92,6 +92,46 @@ class FindByTextAction extends FindAction {
   /// If no matches returns `null`.
   @override
   Element? execute(WidgetsBinding binding) {
-    return _findByText(text, binding.rootElement);
+    return _find(binding.rootElement);
+  }
+}
+
+class FindByWidget<T extends Widget> extends FindAction {
+  const FindByWidget();
+
+  Element? _find(Element? visitor) {
+    if (visitor == null) {
+      return null;
+    }
+    Element? result;
+    if (visitor.widget is T) {
+      result = visitor;
+    }
+    if (result == null) {
+      // as result not found, recursively check for it
+      visitor.visitChildren((visitor) {
+        result ??= _find(visitor);
+      });
+    }
+    return result;
+  }
+
+  /// Finds an [Element] if the `widget` it is holding
+  /// of type [T]. If [root] is `null` then it start
+  /// looking for the widget from the rootElement of
+  /// the [binding], else it will start looking from
+  /// sepecified `root`.
+  ///
+  /// <br>
+  /// If no matches returns `null`.
+  @override
+  Element? execute(WidgetsBinding binding, {Element? root}) {
+    return _find(root ?? binding.rootElement);
+  }
+
+  /// An wrapper around [execute] just to match the `Generics`
+  T? find(WidgetsBinding binding, {required Element root}) {
+    final element = execute(binding, root: root);
+    return (element?.widget as T?);
   }
 }

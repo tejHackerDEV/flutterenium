@@ -17,8 +17,11 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Fluttereium Plugin example app'),
         ),
-        body: const Center(
-          child: Text('Test the flutterenium plugin'),
+        body: Column(
+          children: [
+            const Text('Test the flutterenium plugin'),
+            const TextField()..label = 'text-field',
+          ],
         ),
       ),
     );
