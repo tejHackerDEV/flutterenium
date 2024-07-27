@@ -21,6 +21,11 @@ class FluttereniumDriver {
     final driver = await web_driver.puppeteer.launch(
       executablePath: path,
       headless: false,
+      // https://stackoverflow.com/a/60282642
+      defaultViewport: null,
+      args: [
+        '--start-maximized',
+      ],
     );
     return FluttereniumDriver._(driver);
   }
