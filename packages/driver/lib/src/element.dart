@@ -52,4 +52,14 @@ class Element {
       },
     };
   }
+
+  Map<String, dynamic> toScrollAction(double by, Duration? duration) {
+    return {
+      "type": "scroll",
+      "data": {
+        "by": by,
+        "milliseconds": duration?.inMilliseconds,
+      },
+    };
+  }
 }

@@ -211,4 +211,21 @@ class FluttereniumDriver {
     );
     return didSucceeded;
   }
+
+  /// Scrolls the [element] [by] pixels.
+  ///
+  /// <br>
+  /// If [duration] is null it will jump direclty to location,
+  /// else it will animate to the location.
+  Future<bool> scrollBy(
+    Element element,
+    double by, {
+    Duration? duration,
+  }) async {
+    final (didSucceeded, _) = await _executeAction(
+      element,
+      element.toScrollAction(by, duration),
+    );
+    return didSucceeded;
+  }
 }

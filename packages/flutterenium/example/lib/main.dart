@@ -21,6 +21,18 @@ class MyApp extends StatelessWidget {
           children: [
             const Text('Test the flutterenium plugin'),
             const TextField()..label = 'text-field',
+            Expanded(
+              child: ListView(
+                children: List.generate(25, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      index.toString(),
+                    ),
+                  );
+                }),
+              )..label = 'list-view',
+            ),
           ],
         ),
       ),
