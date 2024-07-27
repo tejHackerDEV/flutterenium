@@ -1,5 +1,6 @@
 import 'find.dart';
 import 'get_text.dart';
+import 'scroll.dart';
 import 'set_text.dart';
 
 abstract class Action {
@@ -11,6 +12,7 @@ abstract class Action {
       'find' => FindAction.fromJson(data),
       'get_text' => const GetTextAction(),
       'set_text' => SetTextAction.fromJson(data),
+      'scroll' => ScrollAction.fromJson(data),
       _ => throw UnimplementedError(),
     };
   }

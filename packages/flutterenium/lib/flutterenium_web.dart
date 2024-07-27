@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:js_interop' as js_interop;
 import 'dart:js_interop_unsafe' as js_interop_unsafe;
 
-import 'package:flutter/widgets.dart' hide Action;
+import 'package:flutter/widgets.dart' hide Action, ScrollAction;
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'package:web/web.dart' as web;
@@ -31,7 +31,7 @@ class FluttereniumWeb extends FluttereniumPlatform {
     return version;
   }
 
-  void _eventHandler(web.Event event) {
+  void _eventHandler(web.Event event) async {
     if (event is! web.CustomEvent) {
       return;
     }
@@ -73,6 +73,9 @@ class FluttereniumWeb extends FluttereniumPlatform {
           break;
         case SetTextAction():
           didSucceeded = action.execute(binding, element);
+          break;
+        case ScrollAction():
+          didSucceeded = await action.execute(binding, element);
           break;
       }
     }

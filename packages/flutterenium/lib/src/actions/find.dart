@@ -19,12 +19,15 @@ sealed class FindAction extends Action {
   /// will return the [element]
   bool matcher(Element element);
 
-  Element? _find(Element? visitor) {
+  /// If [skipCurrent] is `true` then the [visitor]
+  /// won't be  used to match the `Element`, only their
+  /// children will be matched. Defaults to `false`
+  Element? _find(Element? visitor, {bool skipCurrent = false}) {
     if (visitor == null) {
       return null;
     }
     Element? result;
-    if (matcher(visitor)) {
+    if (!skipCurrent && matcher(visitor)) {
       result = visitor;
     }
     if (result == null) {
@@ -89,10 +92,12 @@ class FindByTextAction extends FindAction {
 
 class FindByWidget<T extends Widget> extends FindAction {
   /// Finds an [Element] if the `widget` it is holding
-  /// of type [T]. If [root] is `null` then it start
+  /// is of type [T]. If [root] is `null` then it start
   /// looking for the widget from the rootElement of
   /// the [binding], else it will start looking from
-  /// sepecified `root`.
+  /// sepecified `root`. By default it skips the speicifed
+  /// `root` & starts looping from its children, this can
+  /// be overriden by passing [skipCurrent] to `false`.
   ///
   /// <br>
   /// If no matches returns `null`.
@@ -104,8 +109,12 @@ class FindByWidget<T extends Widget> extends FindAction {
   }
 
   @override
-  Element? execute(WidgetsBinding binding, {Element? root}) {
-    return _find(root ?? binding.rootElement);
+  Element? execute(
+    WidgetsBinding binding, {
+    Element? root,
+    bool skipCurrent = true,
+  }) {
+    return _find(root ?? binding.rootElement, skipCurrent: skipCurrent);
   }
 
   /// An wrapper around [execute] just to match the `Generics`
