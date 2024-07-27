@@ -70,7 +70,7 @@ class ScrollAction extends Action {
       } else {
         offset = scrollController.offset + by;
       }
-      if (milliseconds == null) {
+      if ([null, 0].contains(milliseconds)) {
         scrollController.jumpTo(offset);
       } else {
         await scrollController.animateTo(
