@@ -77,13 +77,13 @@ class FindByTextAction extends FindAction {
 
   @override
   bool matcher(Element element) {
-    bool matched = false;
     final renderObject = element.renderObject;
-    if (renderObject is RenderParagraph) {
-      final textToMatch = renderObject.toPlainText();
-      matched = textToMatch == text;
-    }
-    return matched;
+    final textToMatch = switch (renderObject) {
+      RenderParagraph() => renderObject.toPlainText(),
+      RenderEditable() => renderObject.toPlainText(),
+      _ => null
+    };
+    return textToMatch == text;
   }
 }
 
