@@ -26,12 +26,13 @@ class Element {
   }
 
   Map<String, dynamic> toFindAction() {
+    final name = type.name;
     return {
       "type": "find",
       "data": {
-        "type": type.name,
+        "type": name,
         "data": {
-          "text": value,
+          name: value,
         },
       }
     };
