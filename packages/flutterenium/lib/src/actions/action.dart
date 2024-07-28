@@ -2,6 +2,7 @@ import 'find.dart';
 import 'get_text.dart';
 import 'scroll.dart';
 import 'set_text.dart';
+import 'is_visible.dart';
 
 abstract class Action {
   const Action();
@@ -13,6 +14,7 @@ abstract class Action {
       'get_text' => const GetTextAction(),
       'set_text' => SetTextAction.fromJson(data),
       'scroll' => ScrollAction.fromJson(data),
+      'is_visible' => const IsVisibleAction(),
       _ => throw UnimplementedError(),
     };
   }

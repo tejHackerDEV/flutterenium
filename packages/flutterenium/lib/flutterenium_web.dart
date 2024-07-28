@@ -77,6 +77,9 @@ class FluttereniumWeb extends FluttereniumPlatform {
         case ScrollAction():
           didSucceeded = await action.execute(binding, element);
           break;
+        case IsVisibleAction():
+          didSucceeded = action.execute(binding, element);
+          break;
       }
     }
     web.window.dispatchEvent(
