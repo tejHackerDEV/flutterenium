@@ -62,4 +62,10 @@ class Element {
       },
     };
   }
+
+  Map<String, dynamic> toIsVisibleAction() {
+    return {
+      "type": "is_visible",
+    };
+  }
 }

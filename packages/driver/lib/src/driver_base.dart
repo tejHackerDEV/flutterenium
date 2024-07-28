@@ -233,4 +233,15 @@ class FluttereniumDriver {
     );
     return didSucceeded;
   }
+
+  /// Checks whether the [element] is actually
+  /// visible on the screen or not &
+  /// returns `true` or `false` accordingly.
+  Future<bool> isVisible(Element element) async {
+    final (didSucceeded, _) = await _executeAction(
+      element,
+      element.toIsVisibleAction(),
+    );
+    return didSucceeded;
+  }
 }
