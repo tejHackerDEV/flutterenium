@@ -8,15 +8,15 @@ import 'find.dart';
 const _kDebugLabel = 'FluttereniumScrollController';
 
 class ScrollAction extends Action {
-  const ScrollAction(this.by, this.milliseconds)
+  const ScrollAction(this.delta, this.milliseconds)
       : _scrollableFinder = const FindByWidget(),
         _rawGuestureDetectorFinder = const FindByWidget();
 
   factory ScrollAction.fromJson(Map<String, dynamic> json) {
-    return ScrollAction(json['by'], json['milliseconds']);
+    return ScrollAction(json['delta'], json['milliseconds']);
   }
 
-  final double by;
+  final double delta;
   final int? milliseconds;
   final FindByWidget<Scrollable> _scrollableFinder;
   final FindByWidget<RawGestureDetector> _rawGuestureDetectorFinder;
@@ -61,14 +61,14 @@ class ScrollAction extends Action {
       final scrollController = ScrollController(debugLabel: _kDebugLabel);
       scrollController.attach(scrollableState.position);
       final double offset;
-      if (by == 0) {
+      if (delta == 0) {
         // scroll to very top
         offset = scrollController.position.minScrollExtent;
-      } else if (by == -1) {
+      } else if (delta == -1) {
         // scroll to very bottom
         offset = scrollController.position.maxScrollExtent;
       } else {
-        offset = scrollController.offset + by;
+        offset = scrollController.offset + delta;
       }
       if ([null, 0].contains(milliseconds)) {
         scrollController.jumpTo(offset);
