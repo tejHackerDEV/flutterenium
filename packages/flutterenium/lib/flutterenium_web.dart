@@ -35,65 +35,73 @@ class FluttereniumWeb extends FluttereniumPlatform {
     if (event is! web.CustomEvent) {
       return;
     }
-    final json = jsonDecode(jsonEncode(event.detail.dartify()));
-    if (json is! Map) {
-      return;
-    }
-    final id = json['id'];
-    final actionsArray = json['actions'];
     bool didSucceeded = false;
+    String? id;
     final response = <String, dynamic>{};
-    Element? element;
-    for (int i = 0; i < actionsArray.length; ++i) {
-      final action = Action.fromJson(actionsArray[i]);
-      if (i == 0) {
-        // first index should always be a `find`
-        if (action is! FindAction) {
+    try {
+      final json = jsonDecode(jsonEncode(event.detail.dartify()));
+      if (json is! Map) {
+        return;
+      }
+      id = json['id'];
+      final actionsArray = json['actions'];
+      Element? element;
+      for (int i = 0; i < actionsArray.length; ++i) {
+        final action = Action.fromJson(actionsArray[i]);
+        if (i == 0) {
+          // first index should always be a `find`
+          if (action is! FindAction) {
+            throw UnsupportedError(
+              'First action should start awalys be an `Find`',
+            );
+          }
+          element = action.execute(binding);
+          didSucceeded = element != null;
+          continue;
+        }
+
+        if (element == null) {
           throw UnsupportedError(
-            'First action should start awalys be an `Find`',
+            'Something went wrong while executing `FindAction`, because element cannot be null at this point',
           );
         }
-        element = action.execute(binding);
-        didSucceeded = element != null;
-        continue;
+        switch (action) {
+          case FindAction():
+            throw UnsupportedError(
+              'Only first action should be an `Find`',
+            );
+          case GetTextAction():
+            response['text'] = action.execute(binding, element);
+            break;
+          case SetTextAction():
+            didSucceeded = action.execute(binding, element);
+            break;
+          case ScrollAction():
+            didSucceeded = await action.execute(binding, element);
+            break;
+          case IsVisibleAction():
+            didSucceeded = action.execute(binding, element);
+            break;
+        }
       }
-
-      if (element == null) {
-        throw UnsupportedError(
-          'Something went wrong while executing `FindAction`, because element cannot be null at this point',
-        );
-      }
-      switch (action) {
-        case FindAction():
-          throw UnsupportedError(
-            'Only first action should be an `Find`',
-          );
-        case GetTextAction():
-          response['text'] = action.execute(binding, element);
-          break;
-        case SetTextAction():
-          didSucceeded = action.execute(binding, element);
-          break;
-        case ScrollAction():
-          didSucceeded = await action.execute(binding, element);
-          break;
-        case IsVisibleAction():
-          didSucceeded = action.execute(binding, element);
-          break;
-      }
-    }
-    web.window.dispatchEvent(
-      web.CustomEvent(
-        responseEventName,
-        web.CustomEventInit(
-          detail: {
-            'id': id,
-            'didSucceeded': didSucceeded,
-            if (didSucceeded) 'data': response,
-          }.jsify(),
+    } catch (error, stackTrace) {
+      debugPrint(error.toString());
+      debugPrintStack(stackTrace: stackTrace);
+      didSucceeded = false;
+    } finally {
+      web.window.dispatchEvent(
+        web.CustomEvent(
+          responseEventName,
+          web.CustomEventInit(
+            detail: {
+              'id': id,
+              'didSucceeded': didSucceeded,
+              if (didSucceeded) 'data': response,
+            }.jsify(),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
