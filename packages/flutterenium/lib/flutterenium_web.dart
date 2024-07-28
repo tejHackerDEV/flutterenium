@@ -82,6 +82,9 @@ class FluttereniumWeb extends FluttereniumPlatform {
           case IsVisibleAction():
             didSucceeded = action.execute(binding, element);
             break;
+          case ClickAction():
+            didSucceeded = await action.execute(binding, element);
+            break;
         }
       }
     } catch (error, stackTrace) {

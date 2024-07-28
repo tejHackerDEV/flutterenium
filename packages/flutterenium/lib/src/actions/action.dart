@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart' hide ScrollAction;
 
+import 'click.dart';
 import 'find.dart';
 import 'get_text.dart';
 import 'scroll.dart';
@@ -20,6 +21,7 @@ abstract class Action {
       'set_text' => SetTextAction.fromJson(data),
       'scroll' => ScrollAction.fromJson(data),
       'is_visible' => const IsVisibleAction(),
+      'click' => const ClickAction(),
       _ => throw UnimplementedError(),
     };
   }

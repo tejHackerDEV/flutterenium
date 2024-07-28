@@ -13,6 +13,18 @@ extension WidgetExtension on Widget {
   set label(String? value) => _expando[this] = value;
 }
 
+extension RenderObjectExtension on RenderObject {
+  // Works same as [paintBounds] only difference
+  // was this will give output in global coordinates
+  //
+  // <br>
+  // https://stackoverflow.com/a/71568630
+  Rect get globalPaintBounds {
+    final matrix = getTransformTo(null);
+    return MatrixUtils.transformRect(matrix, paintBounds);
+  }
+}
+
 extension RenderParagraphExtension on RenderParagraph {
   String toPlainText() {
     return text.toPlainText(
