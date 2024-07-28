@@ -54,17 +54,17 @@ class Element {
     return didSucceeded;
   }
 
-  /// Scrolls `this` [by] pixels.
+  /// Scrolls `this` by [delta] pixels.
   ///
   /// <br>
   /// If [duration] is null it will jump direclty to location,
   /// else it will animate to the location.
-  Future<bool> scrollBy(double by, {Duration? duration}) async {
+  Future<bool> scrollBy(double delta, {Duration? duration}) async {
     final (didSucceeded, _) = await onActionExecuted(
       {
         "type": "scroll",
         "data": {
-          "by": by,
+          "delta": delta,
           "milliseconds": duration?.inMilliseconds,
         },
       },
