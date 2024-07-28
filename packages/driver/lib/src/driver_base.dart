@@ -4,6 +4,7 @@ import 'package:slugid/slugid.dart';
 import 'package:puppeteer/puppeteer.dart' as web_driver;
 
 import 'element.dart';
+import 'finder.dart';
 
 const _kFluttereniumReadyEventName = 'ext.flutterenium.ready';
 const _kFluttereniumRequestEventName = 'ext.flutterenium.request';
@@ -131,14 +132,13 @@ class FluttereniumDriver {
   /// This is the heart of entire driver.
   ///
   /// <br>
-  /// Performs the specified [action] by establishing
+  /// Performs the specified [actions] by establishing
   /// the connection with the `Flutter` app using `Flutterenium`.
   /// Returns `true` along with some data if returned by `Flutterenium`
-  /// if the action is successfull, else returns `false` followed by `null`
-  Future<(bool, Map?)> _executeAction(
-    Element element, [
-    Map<String, dynamic>? action,
-  ]) async {
+  /// if the action is successful, else returns `false` followed by `null`
+  ElementActionResponse _executeActions(
+    List<Map<String, dynamic>> actions,
+  ) async {
     final uuid = _generateUUID();
     await _executeScript(
       _currentPage,
@@ -160,7 +160,7 @@ class FluttereniumDriver {
       [
         uuid,
         _kFluttereniumRequestEventName,
-        [element.toFindAction(), if (action != null) action],
+        actions,
       ],
     );
     Map? response;
@@ -186,62 +186,28 @@ class FluttereniumDriver {
     return (didSucceeded, data);
   }
 
-  /// Finds the specified [element] & return `true`
-  /// if found, else `false`
-  Future<bool> find(Element element) async {
-    final (didSucceeded, _) = await _executeAction(element);
-    return didSucceeded;
-  }
-
-  /// Get's the text of specified [element] & return it
-  /// if found, else `null`
-  Future<String?> getText(Element element) async {
-    final (didSucceeded, data) = await _executeAction(
-      element,
-      element.toGetTextAction(),
-    );
-    String? text;
-    if (didSucceeded) {
-      text = data!['text'];
-    }
-    return text;
-  }
-
-  /// Set the [text] for specified [element] & return
-  /// `true` if succeeded, else `false`
-  Future<bool> setText(Element element, String text) async {
-    final (didSucceeded, _) = await _executeAction(
-      element,
-      element.toSetTextAction(text),
-    );
-    return didSucceeded;
-  }
-
-  /// Scrolls the [element] [by] pixels.
+  /// Gets an reference to an [Element]
+  /// based on the [by] finder.
   ///
   /// <br>
-  /// If [duration] is null it will jump direclty to location,
-  /// else it will animate to the location.
-  Future<bool> scrollBy(
-    Element element,
-    double by, {
-    Duration? duration,
-  }) async {
-    final (didSucceeded, _) = await _executeAction(
-      element,
-      element.toScrollAction(by, duration),
-    );
-    return didSucceeded;
-  }
-
-  /// Checks whether the [element] is actually
-  /// visible on the screen or not &
-  /// returns `true` or `false` accordingly.
-  Future<bool> isVisible(Element element) async {
-    final (didSucceeded, _) = await _executeAction(
-      element,
-      element.toIsVisibleAction(),
-    );
-    return didSucceeded;
+  /// Also keep in mind that this is just an handle
+  /// to perform actions, so an element will be returned
+  /// no matter whether an element is actually present
+  /// or not. One should use the `actions` to test whether
+  /// element is actually present or not.
+  Element get(By by) {
+    final name = by.type.name;
+    final findAction = {
+      "type": "find",
+      "data": {
+        "type": name,
+        "data": {
+          name: by.value,
+        },
+      }
+    };
+    return Element(onActionExecuted: (action) {
+      return _executeActions([findAction, if (action != null) action]);
+    });
   }
 }

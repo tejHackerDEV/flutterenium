@@ -1,71 +1,86 @@
-enum FindType {
-  label,
-  text,
-}
+typedef ElementActionResponse = Future<(bool, Map?)>;
+
+typedef ElementActionExecuted = ElementActionResponse Function(
+  Map<String, dynamic>? action,
+);
 
 class Element {
-  final String value;
-  final FindType type;
+  final ElementActionExecuted onActionExecuted;
 
-  const Element._(this.value, this.type);
+  const Element._(this.onActionExecuted);
 
-  /// Upon creating an element by this constuctor,
-  /// any action that is performed on `this` will first
-  /// execute the `FindAction` by the [label] & then
-  /// execute the specified actions on that
-  factory Element.byLabel(String label) {
-    return Element._(label, FindType.label);
+  factory Element({required ElementActionExecuted onActionExecuted}) {
+    return Element._(onActionExecuted);
   }
 
-  /// Upon creating an element by this constuctor,
-  /// any action that is performed on `this` will first
-  /// execute the `FindAction` by the [text] & then
-  /// execute the specified actions on that
-  factory Element.byText(String text) {
-    return Element._(text, FindType.text);
+  /// Finds `this` element & return `true`
+  /// if found, else `false`.
+  ///
+  /// <br>
+  /// This won't check whether the element is currently visible
+  /// on the screen ot not, to check that condiser using
+  /// [isVisible].
+  Future<bool> find() async {
+    final (didSucceeded, _) = await onActionExecuted(null);
+    return didSucceeded;
   }
 
-  Map<String, dynamic> toFindAction() {
-    final name = type.name;
-    return {
-      "type": "find",
-      "data": {
-        "type": name,
+  /// Get the text of `this` element & return it
+  /// if found, else `null`
+  Future<String?> getText() async {
+    final (didSucceeded, data) = await onActionExecuted(
+      {
+        "type": "get_text",
+      },
+    );
+    String? text;
+    if (didSucceeded) {
+      text = data!['text'];
+    }
+    return text;
+  }
+
+  /// Set the [text] for `this` element & return
+  /// `true` if succeeded, else `false`
+  Future<bool> setText(String text) async {
+    final (didSucceeded, _) = await onActionExecuted(
+      {
+        "type": "set_text",
         "data": {
-          name: value,
+          "text": text,
         },
-      }
-    };
-  }
-
-  Map<String, dynamic> toGetTextAction() {
-    return {
-      "type": "get_text",
-    };
-  }
-
-  Map<String, dynamic> toSetTextAction(String text) {
-    return {
-      "type": "set_text",
-      "data": {
-        "text": text,
       },
-    };
+    );
+    return didSucceeded;
   }
 
-  Map<String, dynamic> toScrollAction(double by, Duration? duration) {
-    return {
-      "type": "scroll",
-      "data": {
-        "by": by,
-        "milliseconds": duration?.inMilliseconds,
+  /// Scrolls `this` [by] pixels.
+  ///
+  /// <br>
+  /// If [duration] is null it will jump direclty to location,
+  /// else it will animate to the location.
+  Future<bool> scrollBy(double by, {Duration? duration}) async {
+    final (didSucceeded, _) = await onActionExecuted(
+      {
+        "type": "scroll",
+        "data": {
+          "by": by,
+          "milliseconds": duration?.inMilliseconds,
+        },
       },
-    };
+    );
+    return didSucceeded;
   }
 
-  Map<String, dynamic> toIsVisibleAction() {
-    return {
-      "type": "is_visible",
-    };
+  /// Checks whether the this `element` is actually
+  /// visible on the screen or not &
+  /// returns `true` or `false` accordingly.
+  Future<bool> isVisible() async {
+    final (didSucceeded, _) = await onActionExecuted(
+      {
+        "type": "is_visible",
+      },
+    );
+    return didSucceeded;
   }
 }
