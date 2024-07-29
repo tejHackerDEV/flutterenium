@@ -13,6 +13,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         # List your package dependencies here
+        'selenium>=4.23.1,<5.0.0'
     ],
     classifiers=[
         'Programming Language :: Python :: 3.10',
