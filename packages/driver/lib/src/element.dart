@@ -83,4 +83,15 @@ class Element {
     );
     return didSucceeded;
   }
+
+  /// Tries to perform a click on this `element` &
+  /// returns `true` or `false` accordingly.
+  Future<bool> click() async {
+    final (didSucceeded, _) = await onActionExecuted(
+      {
+        "type": "click",
+      },
+    );
+    return didSucceeded;
+  }
 }

@@ -19,7 +19,18 @@ class MyApp extends StatelessWidget {
         ),
         body: Column(
           children: [
-            const Text('Test the flutterenium plugin'),
+            Builder(builder: (context) {
+              return InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("I am pressed"),
+                    ),
+                  );
+                },
+                child: const Text('Test the flutterenium plugin'),
+              );
+            }),
             const TextField()..label = 'text-field',
             Expanded(
               child: ListView(
