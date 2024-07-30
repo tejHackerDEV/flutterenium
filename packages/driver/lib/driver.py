@@ -9,17 +9,17 @@ from .element import Element
 from .finder import *
 
 
-class Browser(Enum):
+class BrowserKind(Enum):
     CHROME = 0
     FIREFOX = 1
 
 
 class FluttereniumDriver:
-    def __init__(self, browser: Browser):
-        match browser:
-            case Browser.CHROME:
+    def __init__(self, browser_kind: BrowserKind):
+        match browser_kind:
+            case BrowserKind.CHROME:
                 self.__driver = webdriver.Chrome()
-            case Browser.FIREFOX:
+            case BrowserKind.FIREFOX:
                 self.__driver = webdriver.Firefox()
             case _:
                 raise ValueError("Unhandled browser value")
@@ -135,7 +135,7 @@ class FluttereniumDriver:
         Returns:
             Element: one should use this as a handle to perform actions
         """
-        name = by.kind.name
+        name = by.kind.value
         find_action = {
             "type": "find",
             "data": {
@@ -146,10 +146,10 @@ class FluttereniumDriver:
             },
         }
 
-        def on_action_executed(action: Optional[dict[str, Any]]) -> None:
+        def on_action_executed(action: Optional[dict[str, Any]]) -> tuple[bool, dict | None]:
             actions = [find_action]
             if action is not None:
                 actions.append(action)
-            self.__execute_actions(actions)
+            return self.__execute_actions(actions)
 
         return Element(on_action_executed=on_action_executed)

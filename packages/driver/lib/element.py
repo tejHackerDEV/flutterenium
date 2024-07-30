@@ -44,7 +44,7 @@ class Element:
         )
         return did_succeed
 
-    async def scroll_by(self, delta: float, duration: Optional[int] = None) -> bool:
+    def scroll_by(self, delta: float, duration: Optional[int] = None) -> bool:
         """
         Scrolls the element by a specified number of pixels.
 
@@ -52,7 +52,7 @@ class Element:
             delta: The number of pixels to scroll.
             duration: The duration in milliseconds for scrolling. If `None`, it will jump directly to the location.
         """
-        did_succeed, _ = await self.__on_action_executed(
+        did_succeed, _ = self.__on_action_executed(
             {
                 "type": "scroll",
                 "data": {
@@ -63,22 +63,22 @@ class Element:
         )
         return did_succeed
 
-    async def is_visible(self) -> bool:
+    def is_visible(self) -> bool:
         """
         Checks whether the element is visible on the screen and returns `True` or `False` accordingly.
         """
-        did_succeed, _ = await self.__on_action_executed(
+        did_succeed, _ = self.__on_action_executed(
             {
                 "type": "is_visible",
             },
         )
         return did_succeed
 
-    async def click(self) -> bool:
+    def click(self) -> bool:
         """
         Tries to perform a click on the element and returns `True` if succeeded, otherwise `False`.
         """
-        did_succeed, _ = await self.__on_action_executed(
+        did_succeed, _ = self.__on_action_executed(
             {
                 "type": "click",
             },

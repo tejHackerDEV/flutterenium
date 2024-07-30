@@ -1,8 +1,8 @@
-from enum import Enum, auto
+from enum import Enum
 
 class FinderKind(Enum):
-    LABEL = auto()
-    TEXT = auto()
+    LABEL = 'label'
+    TEXT = 'text'
 
 class By:
     def __init__(self, value: str, kind: FinderKind):

@@ -10,7 +10,8 @@ setup(
     author='TejHackerDEV',
     author_email='tejasimha222@gmail.com',
     license='MIT',
-    packages=find_packages(),
+    packages=find_packages(include=['lib', 'lib.*']),
+    test_suite='tests',
     install_requires=[
         # List your package dependencies here
         'selenium>=4.23.1,<5.0.0'
