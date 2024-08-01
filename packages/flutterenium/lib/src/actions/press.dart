@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart' hide Action;
 
 import '../extensions.dart';
 import 'action.dart';
+import 'pump.dart';
 
 sealed class PressAction extends Action {
   const PressAction();
@@ -23,7 +24,7 @@ sealed class PressAction extends Action {
     if (renderObject != null) {
       final center = renderObject.globalPaintBounds.center;
       binding.handlePointerEvent(PointerDownEvent(position: center));
-      await pump(binding, duration);
+      await const PumpAction().execute(binding, duration);
       binding.handlePointerEvent(PointerUpEvent(position: center));
       didSucceeded = true;
     }
