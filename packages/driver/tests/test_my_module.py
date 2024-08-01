@@ -13,7 +13,7 @@ class TestMyModule(unittest.TestCase):
         element = driver.get(By.text(text))
         self.assertEqual(element.get_text(), text)
 
-        self.assertTrue(element.click())
+        self.assertTrue(element.press())
         time.sleep(5)
 
         element = driver.get(By.label("text-field"))

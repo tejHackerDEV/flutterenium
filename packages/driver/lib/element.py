@@ -1,4 +1,10 @@
 from typing import Callable, Any, Optional
+from enum import Enum
+
+
+class PressKind(Enum):
+    NOMRAL = "normal_press"
+    LONG = "long_press"
 
 
 class Element:
@@ -74,13 +80,23 @@ class Element:
         )
         return did_succeed
 
-    def click(self) -> bool:
+    def press(self, kind: PressKind = PressKind.NOMRAL) -> bool:
         """
-        Tries to perform a click on the element and returns `True` if succeeded, otherwise `False`.
+        Tries to perform a click on the element
+
+        Args:
+            kind (PressKind, optional): If this is normal it just does a regular click.
+            If this is long it performs an long click. Defaults to PressKind.NOMRAL.
+
+        Returns:
+            bool: `True` if succeeded, otherwise `False`.
         """
         did_succeed, _ = self.__on_action_executed(
             {
-                "type": "click",
+                "type": "press",
+                "data": {
+                    "type": kind.value,
+                }
             },
         )
         return did_succeed
