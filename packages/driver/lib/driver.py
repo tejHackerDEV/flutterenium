@@ -137,19 +137,30 @@ class FluttereniumDriver:
         """
         name = by.kind.value
         find_action = {
-            "type": "find",
+            "type": "framework",
             "data": {
-                "type": name,
+                "type": "find",
                 "data": {
-                    name: by.value,
+                    "type": name,
+                    "data": {
+                        name: by.value,
+                    },
                 },
             },
         }
 
-        def on_action_executed(action: Optional[dict[str, Any]]) -> tuple[bool, dict | None]:
+        def on_action_executed(
+            action: Optional[dict[str, Any]]
+        ) -> tuple[bool, dict | None]:
             actions = [find_action]
             if action is not None:
-                actions.append(action)
+                actions.append(
+                    {
+                        "type": "element",
+                        "data": action,
+                    },
+                )
+
             return self.__execute_actions(actions)
 
         return Element(on_action_executed=on_action_executed)
