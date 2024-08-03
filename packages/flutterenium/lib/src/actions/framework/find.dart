@@ -1,10 +1,10 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart' hide Action;
 
-import 'action.dart';
-import '../extensions.dart';
+import '../../extensions.dart';
+import 'framework.dart';
 
-sealed class FindAction extends Action {
+sealed class FindAction extends FrameworkAction {
   const FindAction();
 
   factory FindAction.fromJson(Map<String, dynamic> json) {
@@ -39,6 +39,7 @@ sealed class FindAction extends Action {
     return result;
   }
 
+  @override
   Element? execute(WidgetsBinding binding) {
     return _find(binding.rootElement);
   }

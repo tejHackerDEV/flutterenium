@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart' hide Action;
 
-import 'action.dart';
-import 'find.dart';
+import '../framework/index.dart';
+import 'element.dart';
 
 const _kDebugLabel = 'FluttereniumScrollController';
 
-class ScrollAction extends Action {
+class ScrollAction extends ElementAction {
   const ScrollAction(this.delta, this.milliseconds)
       : _scrollableFinder = const FindByWidget(),
         _rawGuestureDetectorFinder = const FindByWidget();
@@ -21,6 +21,7 @@ class ScrollAction extends Action {
   final FindByWidget<Scrollable> _scrollableFinder;
   final FindByWidget<RawGestureDetector> _rawGuestureDetectorFinder;
 
+  @override
   FutureOr<bool> execute(WidgetsBinding binding, Element element) async {
     bool didSucceeded = false;
     // All the code that is written is based on the comments written

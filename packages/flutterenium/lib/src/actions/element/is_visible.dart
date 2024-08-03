@@ -1,11 +1,12 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart' hide Action;
 
-import 'action.dart';
+import 'element.dart';
 
-class IsVisibleAction extends Action {
+class IsVisibleAction extends ElementAction {
   const IsVisibleAction();
 
+  @override
   bool execute(WidgetsBinding binding, Element element) {
     bool isVisible = false;
     // Kanged the code from `flutter_test` package after checking

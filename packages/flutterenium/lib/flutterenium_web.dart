@@ -3,6 +3,7 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop' as js_interop;
 import 'dart:js_interop_unsafe' as js_interop_unsafe;
@@ -44,47 +45,42 @@ class FluttereniumWeb extends FluttereniumPlatform {
         return;
       }
       id = json['id'];
-      final actionsArray = json['actions'];
+      final actions = json['actions'];
       Element? element;
-      for (int i = 0; i < actionsArray.length; ++i) {
-        final action = Action.fromJson(actionsArray[i]);
-        if (i == 0) {
-          // first index should always be a `find`
-          if (action is! FindAction) {
-            throw UnsupportedError(
-              'First action should start awalys be an `Find`',
-            );
-          }
-          element = action.execute(binding);
-          didSucceeded = element != null;
-          continue;
-        }
-
-        if (element == null) {
-          throw UnsupportedError(
-            'Something went wrong while executing `FindAction`, because element cannot be null at this point',
-          );
-        }
+      for (int i = 0; i < actions.length; ++i) {
+        final action = Action.fromJson(actions[i]);
         switch (action) {
-          case FindAction():
-            throw UnsupportedError(
-              'Only first action should be an `Find`',
-            );
-          case GetTextAction():
-            response['text'] = action.execute(binding, element);
+          case FrameworkAction():
+            final frameworkResponse = await action.execute(binding);
+            if (frameworkResponse is Element) {
+              element = frameworkResponse;
+            }
+            didSucceeded = true;
             break;
-          case SetTextAction():
-            didSucceeded = action.execute(binding, element);
+          case ElementAction():
+            if (element == null) {
+              throw UnsupportedError(
+                'Something went wrong while executing `FindAction`, because element cannot be null at this stage',
+              );
+            }
+            switch (action) {
+              case GetTextAction():
+                response['text'] = action.execute(binding, element);
+                break;
+              case _:
+                didSucceeded = await action.execute(binding, element);
+                break;
+            }
             break;
-          case ScrollAction():
-            didSucceeded = await action.execute(binding, element);
-            break;
-          case IsVisibleAction():
-            didSucceeded = action.execute(binding, element);
-            break;
-          case PressAction():
-            didSucceeded = await action.execute(binding, element);
-            break;
+          case _:
+            throw UnimplementedError("$action is not supported yet");
+        }
+        if (element == null) {
+          if (action is FindAction) {
+            element = action.execute(binding);
+            didSucceeded = element != null;
+            continue;
+          }
         }
       }
     } catch (error, stackTrace) {

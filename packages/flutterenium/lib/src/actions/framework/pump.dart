@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart' hide Action;
 
-import 'action.dart';
+import 'framework.dart';
 
 /// Waits till the end of the current frame completion
-class PumpAction extends Action {
+class PumpAction extends FrameworkAction {
   const PumpAction();
 
   factory PumpAction.fromJson(Map<String, dynamic> json) {
@@ -16,6 +16,7 @@ class PumpAction extends Action {
     };
   }
 
+  @override
   Future<void> execute(
     WidgetsBinding binding, [
     Duration duration = Duration.zero,

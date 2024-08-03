@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart' hide Action;
 
-import '../extensions.dart';
-import 'action.dart';
-import 'pump.dart';
+import '../../extensions.dart';
+import '../framework/index.dart';
+import 'element.dart';
 
-sealed class PressAction extends Action {
+sealed class PressAction extends ElementAction {
   const PressAction();
 
   factory PressAction.fromJson(Map<String, dynamic> json) {
@@ -18,6 +18,7 @@ sealed class PressAction extends Action {
 
   Duration get duration;
 
+  @override
   Future<bool> execute(WidgetsBinding binding, Element element) async {
     bool didSucceeded = false;
     final renderObject = element.renderObject;
