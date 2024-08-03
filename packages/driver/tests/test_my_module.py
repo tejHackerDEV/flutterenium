@@ -15,6 +15,8 @@ class TestMyModule(unittest.TestCase):
 
         self.assertTrue(element.press())
         time.sleep(5)
+        self.assertTrue(driver.pump())
+        self.assertTrue(driver.pump(PumpKind.SETTLE))
 
         element = driver.get(By.label("text-field"))
         self.assertTrue(element.set_text(text))

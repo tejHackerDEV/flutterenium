@@ -14,6 +14,16 @@ class BrowserKind(Enum):
     FIREFOX = 1
 
 
+class ActionKind(Enum):
+    FRAMEWORK = "framework"
+    ELEMENT = "element"
+
+
+class PumpKind(Enum):
+    NORMAL = "normal"
+    SETTLE = "settle"
+
+
 class FluttereniumDriver:
     def __init__(self, browser_kind: BrowserKind):
         match browser_kind:
@@ -123,6 +133,19 @@ class FluttereniumDriver:
             data = dict(data)
         return (did_succeeded, data)
 
+    def __to_action(self, kind: ActionKind, data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Use this to convert data into an `Flutterenium` action
+
+        Args:
+            kind (ActionKind): into what the action we want to convert
+            data (dict[str, Any]): any data that is required by the action while performing
+
+        Returns:
+            dict[str, Any]: an action which is converted as per the specified kind
+        """
+        return {"type": kind.value, "data": data}
+
     def get(self, by: By) -> Element:
         """
         Get an element no matter whether an element is actually present
@@ -136,31 +159,49 @@ class FluttereniumDriver:
             Element: one should use this as a handle to perform actions
         """
         name = by.kind.value
-        find_action = {
-            "type": "framework",
+        find_data = {
+            "type": "find",
             "data": {
-                "type": "find",
+                "type": name,
                 "data": {
-                    "type": name,
-                    "data": {
-                        name: by.value,
-                    },
+                    name: by.value,
                 },
             },
         }
 
         def on_action_executed(
-            action: Optional[dict[str, Any]]
+            data: Optional[dict[str, Any]]
         ) -> tuple[bool, dict | None]:
-            actions = [find_action]
-            if action is not None:
-                actions.append(
-                    {
-                        "type": "element",
-                        "data": action,
-                    },
-                )
+            actions = [self.__to_action(ActionKind.FRAMEWORK, find_data)]
+            if data is not None:
+                actions.append(self.__to_action(ActionKind.ELEMENT, data))
 
             return self.__execute_actions(actions)
 
         return Element(on_action_executed=on_action_executed)
+
+    def pump(self, kind: PumpKind = PumpKind.NORMAL) -> bool:
+        """
+        This will helpful when we want to wait till the frame/frames gets completed
+
+        Args:
+            kind (PumpKind, optional): PumpKind.NORMAL will wait till the current frame gets completed,
+              while PumpKind.SETTLE will wait till all the scheduled frames got completed. Defaults to PumpKind.NORMAL.
+
+        Returns:
+            bool: `True` if succeeded, else `False`
+        """
+        (didSucceeded, _) = self.__execute_actions(
+            [
+                self.__to_action(
+                    ActionKind.FRAMEWORK,
+                    {
+                        "type": "pump",
+                        "data": {
+                            "type": kind.value,
+                        },
+                    },
+                )
+            ],
+        )
+        return didSucceeded
