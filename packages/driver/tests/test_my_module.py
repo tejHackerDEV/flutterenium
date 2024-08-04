@@ -35,6 +35,12 @@ class TestMyModule(unittest.TestCase):
         self.assertTrue(element.scroll_by(0))
         self.assertTrue(driver.get(By.text("0")).is_visible())
 
+        element = driver.get(By.svg("https://raw.githubusercontent.com/dnfield/flutter_svg/master/packages/flutter_svg/example/assets/flutter_logo.svg"))
+        self.assertTrue(element.is_visible())
+
+        element = driver.get(By.svg("flutter_logo.svg$"))
+        self.assertTrue(element.is_visible())
+
 
 if __name__ == '__main__':
     unittest.main()

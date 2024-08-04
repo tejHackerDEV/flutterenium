@@ -3,6 +3,7 @@ from enum import Enum
 class FinderKind(Enum):
     LABEL = 'label'
     TEXT = 'text'
+    SVG = 'svg'
 
 class By:
     def __init__(self, value: str, kind: FinderKind):
@@ -40,3 +41,16 @@ class By:
             By: instance with TEXT FinderKind.
         """
         return cls(value=text, kind=FinderKind.TEXT)
+    
+    @classmethod
+    def svg(cls, text: str) -> 'By':
+        """
+        Factory method to create a By instance using svg.
+
+        Args:
+            text (str): The svg to find the element.
+
+        Returns:
+            By: instance with SVG FinderKind.
+        """
+        return cls(value=text, kind=FinderKind.SVG)

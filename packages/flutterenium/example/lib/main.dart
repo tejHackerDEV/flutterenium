@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutterenium/flutterenium.dart';
 
@@ -32,6 +33,11 @@ class MyApp extends StatelessWidget {
               );
             }),
             const TextField()..label = 'text-field',
+            SvgPicture.network(
+              'https://raw.githubusercontent.com/dnfield/flutter_svg/master/packages/flutter_svg/example/assets/flutter_logo.svg',
+              width: 200,
+              height: 200,
+            ),
             Expanded(
               child: ListView(
                 children: List.generate(25, (index) {
