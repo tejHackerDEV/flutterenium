@@ -51,11 +51,20 @@ class FluttereniumWeb extends FluttereniumPlatform {
         final action = Action.fromJson(actions[i]);
         switch (action) {
           case FrameworkAction():
-            final frameworkResponse = await action.execute(binding);
-            if (frameworkResponse is Element) {
-              element = frameworkResponse;
+            switch (action) {
+              case FindAction():
+                element = action.execute(
+                  binding,
+                  root: element,
+                  skipCurrent: element != null,
+                );
+                didSucceeded = element != null;
+                break;
+              case _:
+                await action.execute(binding);
+                didSucceeded = true;
+                break;
             }
-            didSucceeded = true;
             break;
           case ElementAction():
             if (element == null) {
@@ -75,12 +84,10 @@ class FluttereniumWeb extends FluttereniumPlatform {
           case _:
             throw UnimplementedError("$action is not supported yet");
         }
-        if (element == null) {
-          if (action is FindAction) {
-            element = action.execute(binding);
-            didSucceeded = element != null;
-            continue;
-          }
+        if (!didSucceeded) {
+          // As the action is not succeeded, there is no need to
+          // going further to perform remaining actions
+          break;
         }
       }
     } catch (error, stackTrace) {

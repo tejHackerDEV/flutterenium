@@ -12,6 +12,7 @@ sealed class FindAction extends FrameworkAction {
     return switch (json['type']) {
       'label' => FindByLabelAction.fromJson(json['data']),
       'text' => FindByTextAction.fromJson(json['data']),
+      'svg' => FindBySvgAction.fromJson(json['data']),
       _ => throw UnimplementedError(),
     };
   }
@@ -22,8 +23,8 @@ sealed class FindAction extends FrameworkAction {
 
   /// If [skipCurrent] is `true` then the [visitor]
   /// won't be  used to match the `Element`, only their
-  /// children will be matched. Defaults to `false`
-  Element? _find(Element? visitor, {bool skipCurrent = false}) {
+  /// children will be matched.
+  Element? _find(Element? visitor, {required bool skipCurrent}) {
     if (visitor == null) {
       return null;
     }
@@ -34,15 +35,19 @@ sealed class FindAction extends FrameworkAction {
     if (result == null) {
       // as result not found, recursively check for it
       visitor.visitChildren((visitor) {
-        result ??= _find(visitor);
+        result ??= _find(visitor, skipCurrent: false);
       });
     }
     return result;
   }
 
   @override
-  Element? execute(WidgetsBinding binding) {
-    return _find(binding.rootElement);
+  Element? execute(
+    WidgetsBinding binding, {
+    Element? root,
+    bool skipCurrent = false,
+  }) {
+    return _find(root ?? binding.rootElement, skipCurrent: skipCurrent);
   }
 }
 
@@ -126,12 +131,16 @@ class FindByWidget<T extends Widget> extends FindAction {
   }
 }
 
-class FindBySvg extends FindByWidget<SvgPicture> {
+class FindBySvgAction extends FindByWidget<SvgPicture> {
   final String value;
 
   /// Finds an [Element] if the `widget` it is holding
-  /// is of type [SvgPicture].
-  const FindBySvg(this.value);
+  /// is of type [SvgPicture] & matches the [value].
+  const FindBySvgAction(this.value);
+
+  factory FindBySvgAction.fromJson(Map<String, dynamic> json) {
+    return FindBySvgAction(json['value']);
+  }
 
   @override
   bool matcher(Element element) {
