@@ -1,5 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart' hide Action;
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../extensions.dart';
 import 'framework.dart';
@@ -122,5 +123,31 @@ class FindByWidget<T extends Widget> extends FindAction {
   T? find(WidgetsBinding binding, {required Element root}) {
     final element = execute(binding, root: root);
     return (element?.widget as T?);
+  }
+}
+
+class FindBySvg extends FindByWidget<SvgPicture> {
+  final String value;
+
+  /// Finds an [Element] if the `widget` it is holding
+  /// is of type [SvgPicture].
+  const FindBySvg(this.value);
+
+  @override
+  bool matcher(Element element) {
+    bool didMatched = false;
+    if (super.matcher(element)) {
+      final bytesLoader = (element.widget as SvgPicture).bytesLoader;
+      final valueToMatch = switch (bytesLoader) {
+        SvgAssetLoader() => bytesLoader.assetName,
+        SvgFileLoader() => bytesLoader.file.path,
+        SvgNetworkLoader() => bytesLoader.url,
+        _ => null,
+      };
+      if (valueToMatch != null) {
+        didMatched = RegExp(value).hasMatch(valueToMatch);
+      }
+    }
+    return didMatched;
   }
 }
