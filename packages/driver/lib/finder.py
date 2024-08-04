@@ -1,9 +1,14 @@
 from enum import Enum
 
+from .driver import ActionKind
+from .internal import utils
+
+
 class FinderKind(Enum):
-    LABEL = 'label'
-    TEXT = 'text'
-    SVG = 'svg'
+    LABEL = "label"
+    TEXT = "text"
+    SVG = "svg"
+
 
 class By:
     def __init__(self, value: str, kind: FinderKind):
@@ -17,7 +22,7 @@ class By:
         self.kind = kind
 
     @classmethod
-    def label(cls, label: str) -> 'By':
+    def label(cls, label: str) -> "By":
         """
         Factory method to create a By instance using label.
 
@@ -30,7 +35,7 @@ class By:
         return cls(value=label, kind=FinderKind.LABEL)
 
     @classmethod
-    def text(cls, text: str) -> 'By':
+    def text(cls, text: str) -> "By":
         """
         Factory method to create a By instance using text.
 
@@ -41,9 +46,9 @@ class By:
             By: instance with TEXT FinderKind.
         """
         return cls(value=text, kind=FinderKind.TEXT)
-    
+
     @classmethod
-    def svg(cls, text: str) -> 'By':
+    def svg(cls, text: str) -> "By":
         """
         Factory method to create a By instance using svg.
 
@@ -54,3 +59,18 @@ class By:
             By: instance with SVG FinderKind.
         """
         return cls(value=text, kind=FinderKind.SVG)
+
+    def _to_action(self):
+        name = self.kind.value
+        return utils.to_action(
+            ActionKind.FRAMEWORK,
+            {
+                "type": "find",
+                "data": {
+                    "type": name,
+                    "data": {
+                        name: self.value,
+                    },
+                },
+            },
+        )

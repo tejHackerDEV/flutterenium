@@ -1,10 +1,12 @@
-from .driver import BrowserKind, FluttereniumDriver, PumpKind
-from .element import Element, PressKind
+from .driver import BrowserKind, FluttereniumDriver
+from .action import ActionKind, PumpKind, PressKind
+from .element import Element
 from .finder import By
 
 __all__ = [
     "BrowserKind",
     "FluttereniumDriver",
+    "ActionKind",
     "PumpKind",
     "Element",
     "PressKind",

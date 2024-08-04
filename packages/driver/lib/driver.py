@@ -1,27 +1,21 @@
 from enum import Enum
-from typing import Any, Optional
 import uuid
 
 from selenium import webdriver
 
-from .internal.constants import *
-from .element import Element
+from .action import *
+from .element import *
 from .finder import *
+from .internal.actions_data import *
+from .internal.constants import *
+from .internal.typedefs import *
+
+import lib.internal.utils as utils
 
 
 class BrowserKind(Enum):
     CHROME = 0
     FIREFOX = 1
-
-
-class ActionKind(Enum):
-    FRAMEWORK = "framework"
-    ELEMENT = "element"
-
-
-class PumpKind(Enum):
-    NORMAL = "normal"
-    SETTLE = "settle"
 
 
 class FluttereniumDriver:
@@ -81,16 +75,15 @@ class FluttereniumDriver:
         Closes the current `window` or `browser` instance.
 
         Args:
-            with_browser (bool, optional): If `True` then entire browser closes, else only closes the window. Defaults to False.
+            with_browser (bool, optional): If `True` then entire browser closes,
+            else only closes the window. Defaults to False.
         """
         if not with_browser:
             self.__driver.close()
             return
         self.__driver.quit()
 
-    def __execute_actions(
-        self, actions: list[dict[str, Any]]
-    ) -> tuple[bool, dict | None]:
+    def __execute_actions(self, actions: list[Action]) -> ActionResponse:
         id = str(uuid.uuid4())
         self.__driver.execute_script(
             """
@@ -133,19 +126,6 @@ class FluttereniumDriver:
             data = dict(data)
         return (did_succeeded, data)
 
-    def __to_action(self, kind: ActionKind, data: dict[str, Any]) -> dict[str, Any]:
-        """
-        Use this to convert data into an `Flutterenium` action
-
-        Args:
-            kind (ActionKind): into what the action we want to convert
-            data (dict[str, Any]): any data that is required by the action while performing
-
-        Returns:
-            dict[str, Any]: an action which is converted as per the specified kind
-        """
-        return {"type": kind.value, "data": data}
-
     def get(self, by: By) -> Element:
         """
         Get an element no matter whether an element is actually present
@@ -158,27 +138,14 @@ class FluttereniumDriver:
         Returns:
             Element: one should use this as a handle to perform actions
         """
-        name = by.kind.value
-        find_data = {
-            "type": "find",
-            "data": {
-                "type": name,
-                "data": {
-                    name: by.value,
-                },
-            },
-        }
 
-        def on_action_executed(
-            data: Optional[dict[str, Any]]
-        ) -> tuple[bool, dict | None]:
-            actions = [self.__to_action(ActionKind.FRAMEWORK, find_data)]
-            if data is not None:
-                actions.append(self.__to_action(ActionKind.ELEMENT, data))
-
-            return self.__execute_actions(actions)
-
-        return Element(on_action_executed=on_action_executed)
+        return Element(
+            on_actions_executed=lambda data: on_element_actions_executed(
+                find_action=by._to_action(),
+                data=data,
+                callback=self.__execute_actions,
+            )
+        )
 
     def pump(self, kind: PumpKind = PumpKind.NORMAL) -> bool:
         """
@@ -193,7 +160,7 @@ class FluttereniumDriver:
         """
         (didSucceeded, _) = self.__execute_actions(
             [
-                self.__to_action(
+                utils.to_action(
                     ActionKind.FRAMEWORK,
                     {
                         "type": "pump",

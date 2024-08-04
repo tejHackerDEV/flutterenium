@@ -1,23 +1,46 @@
-from typing import Callable, Any, Optional
-from enum import Enum
+from typing import Callable, Optional
 
 
-class PressKind(Enum):
-    NOMRAL = "normal_press"
-    LONG = "long_press"
+from .action import PressKind
+from .finder import By
+from .internal.actions_data import *
+from .internal.typedefs import *
+from .internal.utils import *
 
 
 class Element:
     def __init__(
-        self, on_action_executed: Callable[[dict[str, Any]], tuple[bool, dict | None]]
+        self,
+        on_actions_executed: Callable[[ActionData], ActionResponse],
     ):
-        self.__on_action_executed = on_action_executed
+        self.__on_action_executed = on_actions_executed
 
-    def find(self) -> bool:
+    def get(self, by: By):
         """
-        Finds the element and returns `True` if found, otherwise `False`.
+        Works same as `driver.get()`, only difference was driver
+        will start looking from the root element, where as this
+        will start looking from the element on which this was called
+
+        Args:
+            by (By): Same as `driver.get()`
+        """
+
+        return Element(
+            on_actions_executed=lambda data: on_element_actions_executed(
+                find_action=by._to_action(),
+                data=data,
+                callback=self.__on_action_executed,
+            ),
+        )
+
+    def is_valid(self) -> bool:
+        """
+        Checks whether the element is a vaid one to peform actions or not.
 
         Note: This method does not check if the element is currently visible on the screen. To check visibility, use `is_visible`.
+
+        Returns:
+            `True` if valid, otherwise `False`
         """
         did_succeed, _ = self.__on_action_executed(None)
         return did_succeed
@@ -96,7 +119,7 @@ class Element:
                 "type": "press",
                 "data": {
                     "type": kind.value,
-                }
+                },
             },
         )
         return did_succeed
