@@ -37,15 +37,12 @@ abstract class FluttereniumPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  @protected
-  @mustCallSuper
-  void onReady() {}
+  void onReady() {
+    throw UnimplementedError('onReady() has not been implemented.');
+  }
 
   @mustCallSuper
   void ensureInitialized() {
     binding = WidgetsFlutterBinding.ensureInitialized();
-    binding.endOfFrame.then((_) {
-      onReady();
-    });
   }
 }

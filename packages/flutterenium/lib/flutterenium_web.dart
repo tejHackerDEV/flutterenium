@@ -105,7 +105,6 @@ class FluttereniumWeb extends FluttereniumPlatform {
 
   @override
   void onReady() {
-    super.onReady();
     web.window.dispatchEvent(web.CustomEvent(readyEventName));
   }
 
@@ -130,5 +129,10 @@ class FluttereniumWeb extends FluttereniumPlatform {
       return true;
     }());
     web.window.addEventListener(requestEventName, eventHandler);
+
+    // Trigger onReady after initialization
+    binding.endOfFrame.then((_) {
+      onReady();
+    });
   }
 }
