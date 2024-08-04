@@ -139,7 +139,7 @@ class FindBySvgAction extends FindByWidget<SvgPicture> {
   const FindBySvgAction(this.value);
 
   factory FindBySvgAction.fromJson(Map<String, dynamic> json) {
-    return FindBySvgAction(json['value']);
+    return FindBySvgAction(json['svg']);
   }
 
   @override
