@@ -7,8 +7,8 @@ class ActionKind(Enum):
 
 
 class PressKind(Enum):
-    NOMRAL = "normal_press"
-    LONG = "long_press"
+    NOMRAL = "normal"
+    LONG = "long"
 
 
 class PumpKind(Enum):
