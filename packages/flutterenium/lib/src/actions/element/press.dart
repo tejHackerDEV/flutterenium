@@ -25,7 +25,7 @@ sealed class PressAction extends ElementAction {
     if (renderObject != null) {
       final center = renderObject.globalPaintBounds.center;
       binding.handlePointerEvent(PointerDownEvent(position: center));
-      await const PumpAction().execute(binding, duration);
+      await PumpAction(duration).execute(binding);
       binding.handlePointerEvent(PointerUpEvent(position: center));
       didSucceeded = true;
     }
