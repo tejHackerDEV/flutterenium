@@ -1,4 +1,5 @@
 from enum import Enum
+from datetime import timedelta
 import uuid
 
 from selenium import webdriver
@@ -9,8 +10,6 @@ from .finder import *
 from .internal.actions_data import *
 from .internal.constants import *
 from .internal.typedefs import *
-
-import lib.internal.utils as utils
 
 
 class BrowserKind(Enum):
@@ -147,7 +146,7 @@ class FluttereniumDriver:
             )
         )
 
-    def pump(self, kind: PumpKind = PumpKind.NORMAL) -> bool:
+    def pump(self, kind: PumpKind = PumpKind.NORMAL, delta: timedelta = None) -> bool:
         """
         This will helpful when we want to wait till the frame/frames gets completed
 
@@ -158,6 +157,7 @@ class FluttereniumDriver:
         Returns:
             bool: `True` if succeeded, else `False`
         """
+        actual_delta = delta if delta is not None else kind.get_default_time_delta()
         (didSucceeded, _) = self.__execute_actions(
             [
                 utils.to_action(
@@ -166,6 +166,9 @@ class FluttereniumDriver:
                         "type": "pump",
                         "data": {
                             "type": kind.value,
+                            "data": {
+                                "milliseconds": actual_delta.total_seconds() * 1000,
+                            },
                         },
                     },
                 )

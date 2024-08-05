@@ -1,5 +1,4 @@
 import unittest
-import time
 
 from lib import *
 
@@ -15,8 +14,6 @@ class TestMyModule(unittest.TestCase):
         self.assertEqual(element.get_text(), text)
 
         self.assertTrue(element.press())
-        time.sleep(5)
-        self.assertTrue(driver.pump())
         self.assertTrue(driver.pump(PumpKind.SETTLE))
 
         element = driver.get(By.label("text-field"))
