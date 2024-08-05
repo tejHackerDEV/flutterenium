@@ -10,8 +10,8 @@ sealed class PressAction extends ElementAction {
 
   factory PressAction.fromJson(Map<String, dynamic> json) {
     return switch (json['type']) {
-      'normal_press' => NormalPressAction(),
-      'long_press' => LongPressAction(),
+      'normal' => NormalPressAction(),
+      'long' => LongPressAction(),
       _ => throw UnimplementedError(),
     };
   }
