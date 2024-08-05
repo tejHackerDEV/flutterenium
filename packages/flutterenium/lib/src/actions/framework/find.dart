@@ -1,5 +1,5 @@
+import 'package:flutter/material.dart' hide Action;
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart' hide Action;
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../extensions.dart';
@@ -87,11 +87,15 @@ class FindByTextAction extends FindAction {
 
   @override
   bool matcher(Element element) {
+    final widget = element.widget;
     final renderObject = element.renderObject;
-    final textToMatch = switch (renderObject) {
-      RenderParagraph() => renderObject.toPlainText(),
-      RenderEditable() => renderObject.toPlainText(),
-      _ => null
+    final textToMatch = switch (widget) {
+      InputDecorator() => widget.decoration.hintText,
+      _ => switch (renderObject) {
+          RenderParagraph() => renderObject.toPlainText(),
+          RenderEditable() => renderObject.toPlainText(),
+          _ => null
+        }
     };
     return textToMatch == text;
   }
