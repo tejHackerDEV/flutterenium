@@ -13,6 +13,7 @@ sealed class FindAction extends FrameworkAction {
       'label' => FindByLabelAction.fromJson(json['data']),
       'text' => FindByTextAction.fromJson(json['data']),
       'svg' => FindBySvgAction.fromJson(json['data']),
+      'icon' => FindByIconAction.fromJson(json['data']),
       'preceding_sibling' => FindPrecedingSiblingAction.fromJson(json['data']),
       _ => throw UnimplementedError(),
     };
@@ -99,6 +100,30 @@ class FindByTextAction extends FindAction {
         }
     };
     return textToMatch == text;
+  }
+}
+
+class FindByIconAction extends FindAction {
+  final int icon;
+
+  /// Finds an [Element] if the `icon` it is rendering
+  /// matched with the given [icon].
+  ///
+  /// <br>
+  /// If no matches returns `null`.
+  const FindByIconAction(this.icon);
+
+  factory FindByIconAction.fromJson(Map<String, dynamic> json) {
+    return FindByIconAction(json['icon']);
+  }
+
+  @override
+  bool matcher(Element element) {
+    final widget = element.widget;
+    if (widget is! Icon) {
+      return false;
+    }
+    return widget.icon?.codePoint == icon;
   }
 }
 
