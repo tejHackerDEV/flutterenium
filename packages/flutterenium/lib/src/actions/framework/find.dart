@@ -15,6 +15,7 @@ sealed class FindAction extends FrameworkAction {
       'svg' => FindBySvgAction.fromJson(json['data']),
       'icon' => FindByIconAction.fromJson(json['data']),
       'preceding_sibling' => FindPrecedingSiblingAction.fromJson(json['data']),
+      'following_sibling' => FindFollowingSiblingAction.fromJson(json['data']),
       _ => throw UnimplementedError(),
     };
   }
@@ -191,21 +192,29 @@ class FindBySvgAction extends FindByWidget<SvgPicture> {
   }
 }
 
-class FindPrecedingSiblingAction extends FindAction {
+sealed class FindSiblingAction extends FindAction {
   final bool skipGaps;
 
-  /// Finds the preceding sibling for a given element.
+  /// Finds the sibling for a given element.
   ///
   /// <br>
-  /// If no preceding sibling found then returns `null`.
-  const FindPrecedingSiblingAction(this.skipGaps);
+  /// If no sibling found then returns `null`.
+  const FindSiblingAction(this.skipGaps);
 
-  factory FindPrecedingSiblingAction.fromJson(Map<String, dynamic> json) {
-    return FindPrecedingSiblingAction(json['skip_gaps']);
+  FindSiblingAction.fromJson(Map<String, dynamic> json)
+      : skipGaps = json['skip_gaps'];
+
+  @override
+  bool matcher(Element element) {
+    if (!skipGaps) {
+      return true;
+    }
+    return !_isDummyWidget(element.widget);
   }
 
   @override
-  bool matcher(Element element) => true;
+  Element? _find(Element? visitor, {required bool skipCurrent}) =>
+      throw UnimplementedError();
 
   bool _isDummyWidget(Widget widget) {
     if (widget is SingleChildRenderObjectWidget) {
@@ -216,6 +225,13 @@ class FindPrecedingSiblingAction extends FindAction {
     }
     return false;
   }
+}
+
+class FindPrecedingSiblingAction extends FindSiblingAction {
+  const FindPrecedingSiblingAction(super.skipGaps);
+
+  FindPrecedingSiblingAction.fromJson(Map<String, dynamic> json)
+      : super.fromJson(json);
 
   @override
   Element? _find(Element? visitor, {required bool skipCurrent}) {
@@ -225,7 +241,7 @@ class FindPrecedingSiblingAction extends FindAction {
     Element prevVisitor = visitor;
     Element? result;
     visitor.visitAncestorElements((ancestor) {
-      final precedingSiblings = <Element>[];
+      final siblings = <Element>[];
       bool didReachedVisitor = false;
       ancestor.visitChildren((element) {
         if (!didReachedVisitor) {
@@ -233,21 +249,55 @@ class FindPrecedingSiblingAction extends FindAction {
         }
 
         if (!didReachedVisitor) {
-          bool canAdd = true;
-          if (skipGaps) {
-            canAdd = !_isDummyWidget(element.widget);
-          }
-          if (canAdd) {
-            precedingSiblings.add(element);
+          if (matcher(element)) {
+            siblings.add(element);
           }
         }
       });
-      if (!didReachedVisitor || precedingSiblings.isEmpty) {
+      if (!didReachedVisitor || siblings.isEmpty) {
         // as result not found, recursively check for it
         prevVisitor = ancestor;
         return true;
       }
-      result = precedingSiblings[precedingSiblings.length - 1];
+      result = siblings[siblings.length - 1];
+      return false;
+    });
+
+    return result;
+  }
+}
+
+class FindFollowingSiblingAction extends FindSiblingAction {
+  const FindFollowingSiblingAction(super.skipGaps);
+
+  FindFollowingSiblingAction.fromJson(Map<String, dynamic> json)
+      : super.fromJson(json);
+
+  @override
+  Element? _find(Element? visitor, {required bool skipCurrent}) {
+    if (visitor == null) {
+      return null;
+    }
+    Element prevVisitor = visitor;
+    Element? result;
+    visitor.visitAncestorElements((ancestor) {
+      final siblings = <Element>[];
+      bool didReachedVisitor = false;
+      ancestor.visitChildren((element) {
+        if (didReachedVisitor) {
+          if (matcher(element)) {
+            siblings.add(element);
+          }
+        } else {
+          didReachedVisitor = element == prevVisitor;
+        }
+      });
+      if (!didReachedVisitor || siblings.isEmpty) {
+        // as result not found, recursively check for it
+        prevVisitor = ancestor;
+        return true;
+      }
+      result = siblings[0];
       return false;
     });
 
