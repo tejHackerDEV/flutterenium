@@ -16,43 +16,83 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Fluttereium Plugin example app'),
+          title: const Text('Flutterenium Plugin example app'),
         ),
-        body: Column(
-          children: [
-            Builder(builder: (context) {
-              return InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("I am pressed"),
-                    ),
-                  );
-                },
-                child: const Text('Test the flutterenium plugin'),
-              );
-            }),
-            const TextField()..label = 'text-field',
-            SvgPicture.network(
-              'https://raw.githubusercontent.com/dnfield/flutter_svg/master/packages/flutter_svg/example/assets/flutter_logo.svg',
-              width: 200,
-              height: 200,
-            ),
-            Expanded(
-              child: ListView(
-                children: List.generate(25, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Text(
-                      index.toString(),
-                    ),
-                  );
-                }),
-              )..label = 'list-view',
-            ),
-          ],
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 8.0,
+            horizontal: 16.0,
+          ),
+          child: Column(
+            children: [
+              SvgPicture.network(
+                'https://raw.githubusercontent.com/dnfield/flutter_svg/master/packages/flutter_svg/example/assets/flutter_logo.svg',
+                width: 200,
+                height: 200,
+              ),
+              const SizedBox(height: 12.0),
+              const _TextFieldWithToastButton(),
+              const SizedBox(height: 12.0),
+              Expanded(
+                child: ListView(
+                  children: List.generate(25, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        index.toString(),
+                      ),
+                    );
+                  }),
+                )..label = 'list-view',
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _TextFieldWithToastButton extends StatefulWidget {
+  const _TextFieldWithToastButton({super.key});
+
+  @override
+  State<_TextFieldWithToastButton> createState() =>
+      __TextFieldWithToastButtonState();
+}
+
+class __TextFieldWithToastButtonState extends State<_TextFieldWithToastButton> {
+  final _textEditingController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _textEditingController,
+          decoration: const InputDecoration(hintText: 'Enter here'),
+        ),
+        const SizedBox(height: 12.0),
+        Builder(builder: (context) {
+          return ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(_textEditingController.text),
+                ),
+              );
+            },
+            child: const Text('Show as toast'),
+          );
+        })
+      ],
     );
   }
 }

@@ -9,39 +9,54 @@ class TestMyModule(unittest.TestCase):
         driver = FluttereniumDriver(browser_kind=BrowserKind.CHROME)
         driver.open("http://127.0.0.1:5500")
 
-        text = "Test the flutterenium plugin"
-        element = driver.get(By.text(text))
-        self.assertEqual(element.get_text(), text)
+        # Find a element by the text
+        app_bar_text = "Flutterenium Plugin example app"
+        element = driver.get(By.text(app_bar_text))
+        self.assertEqual(element.get_text(), app_bar_text)
 
-        self.assertTrue(element.press())
+        # Find a SVG by the name
+        flutter_logo = driver.get(By.svg("flutter_logo.svg$"))
+        self.assertTrue(flutter_logo.is_visible())
+
+        # Find a TextField by the hint-text & set some text to it
+        text_field = driver.get(By.text("Enter here"))
+        text_field_text = "Hello, glad to see you are testing me"
+        self.assertTrue(text_field.set_text(text_field_text))
+
+        # Press the button
+        show_toast_button = driver.get(By.text("Show as toast"))
+        self.assertTrue(show_toast_button.press())
+
+        # Wait till taost will be shown
         self.assertTrue(driver.pump(PumpKind.SETTLE))
 
-        element = driver.get(By.label("text-field"))
-        self.assertTrue(element.set_text(text))
-        self.assertEqual(element.get_text(), text)
+        # Find an element by an custom label
+        list_view = driver.get(By.label("list-view"))
 
-        element = driver.get(By.label("list-view"))
-        self.assertTrue(element.scroll_by(200, duration=500))
-        self.assertTrue(element.get(By.text("4")).is_visible())
+        # Scroll an element by some pixels
+        self.assertTrue(list_view.scroll_by(200, duration=500))
+        self.assertTrue(list_view.get(By.text("4")).is_visible())
 
-        self.assertTrue(element.scroll_by(-1))
-        self.assertTrue(driver.get(By.text("24")).is_visible())
+        # Scroll an element to the very bottom
+        self.assertTrue(list_view.scroll_by(-1))
+        self.assertTrue(list_view.get(By.text("24")).is_visible())
 
-        self.assertTrue(element.scroll_by(-200, duration=500))
-        self.assertTrue(element.get(By.text("20")).is_visible())
+        # Scroll an element by some pixels in reverse direction
+        self.assertTrue(list_view.scroll_by(-200, duration=500))
+        self.assertTrue(list_view.get(By.text("20")).is_visible())
 
-        self.assertTrue(element.scroll_by(0))
-        self.assertTrue(element.get(By.text("0")).is_visible())
+        # Scroll an element to very top
+        self.assertTrue(list_view.scroll_by(0))
+        self.assertTrue(list_view.get(By.text("0")).is_visible())
 
-        element = driver.get(
-            By.svg(
-                "https://raw.githubusercontent.com/dnfield/flutter_svg/master/packages/flutter_svg/example/assets/flutter_logo.svg"
-            )
+        # Find preceding sibling
+        self.assertEqual(
+            text_field.get_text(), show_toast_button.get_preceding_sibling().get_text()
         )
-        self.assertTrue(element.is_visible())
-
-        element = driver.get(By.svg("flutter_logo.svg$"))
-        self.assertTrue(element.is_visible())
+        self.assertNotEqual(
+            text_field.get_text(),
+            show_toast_button.get_preceding_sibling(skip_gaps=False).get_text(),
+        )
 
 
 if __name__ == "__main__":
