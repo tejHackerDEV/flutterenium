@@ -13,6 +13,7 @@ sealed class FindAction extends FrameworkAction {
       'label' => FindByLabelAction.fromJson(json['data']),
       'text' => FindByTextAction.fromJson(json['data']),
       'svg' => FindBySvgAction.fromJson(json['data']),
+      'preceding_sibling' => FindPrecedingSiblingAction.fromJson(json['data']),
       _ => throw UnimplementedError(),
     };
   }
@@ -162,5 +163,69 @@ class FindBySvgAction extends FindByWidget<SvgPicture> {
       }
     }
     return didMatched;
+  }
+}
+
+class FindPrecedingSiblingAction extends FindAction {
+  final bool skipGaps;
+
+  /// Finds the preceding sibling for a given element.
+  ///
+  /// <br>
+  /// If no preceding sibling found then returns `null`.
+  const FindPrecedingSiblingAction(this.skipGaps);
+
+  factory FindPrecedingSiblingAction.fromJson(Map<String, dynamic> json) {
+    return FindPrecedingSiblingAction(json['skip_gaps']);
+  }
+
+  @override
+  bool matcher(Element element) => true;
+
+  bool _isDummyWidget(Widget widget) {
+    if (widget is SingleChildRenderObjectWidget) {
+      return widget.child == null;
+    }
+    if (widget is MultiChildRenderObjectWidget) {
+      return widget.children.isEmpty;
+    }
+    return false;
+  }
+
+  @override
+  Element? _find(Element? visitor, {required bool skipCurrent}) {
+    if (visitor == null) {
+      return null;
+    }
+    Element prevVisitor = visitor;
+    Element? result;
+    visitor.visitAncestorElements((ancestor) {
+      final precedingSiblings = <Element>[];
+      bool didReachedVisitor = false;
+      ancestor.visitChildren((element) {
+        if (!didReachedVisitor) {
+          didReachedVisitor = element == prevVisitor;
+        }
+
+        if (!didReachedVisitor) {
+          bool canAdd = true;
+          if (skipGaps) {
+            canAdd = !_isDummyWidget(element.widget);
+          }
+          if (canAdd) {
+            precedingSiblings.add(element);
+          }
+        }
+      });
+      if (!didReachedVisitor || precedingSiblings.isEmpty) {
+        // as result not found, recursively check for it
+        prevVisitor = ancestor;
+        return true;
+      }
+      result = precedingSiblings[precedingSiblings.length - 1];
+      return false;
+    });
+
+    return result;
   }
 }
