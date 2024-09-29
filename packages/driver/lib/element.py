@@ -153,3 +153,33 @@ class Element:
                 callback=self.__on_action_executed,
             ),
         )
+
+    def get_following_sibling(self, skip_gaps: bool = True):
+        """
+        This will helpful when we want to get the following sibiling of an element
+
+        Args:
+            skip_gaps (bool, optional): `True` will skip the empty element which don't have child/children associated to them,
+                while `False` will get the sibling even though it is an empty element which doesn't have any child/children with them.
+
+        Returns:
+            bool: `True` if succeeded, else `False`
+        """
+        return Element(
+            on_actions_executed=lambda data: on_element_actions_executed(
+                find_action=utils.to_action(
+                    ActionKind.FRAMEWORK,
+                    {
+                        "type": "find",
+                        "data": {
+                            "type": "following_sibling",
+                            "data": {
+                                "skip_gaps": skip_gaps,
+                            },
+                        },
+                    },
+                ),
+                data=data,
+                callback=self.__on_action_executed,
+            ),
+        )

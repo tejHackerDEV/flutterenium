@@ -18,6 +18,10 @@ class TestMyModule(unittest.TestCase):
         flutter_logo = driver.get(By.svg("flutter_logo.svg$"))
         self.assertTrue(flutter_logo.is_visible())
 
+        # Find a Icon by CharCode
+        add_icon = driver.get(By.icon(0xE047))
+        self.assertTrue(add_icon.is_visible())
+
         # Find a TextField by the hint-text & set some text to it
         text_field = driver.get(By.text("Enter here"))
         text_field_text = "Hello, glad to see you are testing me"
@@ -57,6 +61,11 @@ class TestMyModule(unittest.TestCase):
             text_field.get_text(),
             show_toast_button.get_preceding_sibling(skip_gaps=False).get_text(),
         )
+
+        # Find following sibling
+        save_icon = add_icon.get_following_sibling()
+        self.assertTrue(save_icon.press())
+        self.assertTrue(driver.pump(PumpKind.SETTLE))
 
 
 if __name__ == "__main__":

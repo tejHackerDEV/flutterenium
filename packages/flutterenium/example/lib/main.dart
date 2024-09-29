@@ -8,6 +8,14 @@ void main() {
   runApp(const MyApp());
 }
 
+void _showSnackBar(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(text),
+    ),
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -17,6 +25,17 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Flutterenium Plugin example app'),
+          actions: const [
+            _AppBarIcon(
+              Icons.add,
+              text: 'Add',
+            ),
+            SizedBox(width: 16.0),
+            _AppBarIcon(
+              Icons.save,
+              text: 'Save',
+            ),
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(
@@ -53,6 +72,27 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class _AppBarIcon extends StatelessWidget {
+  const _AppBarIcon(
+    this.iconData, {
+    super.key,
+    required this.text,
+  });
+
+  final IconData iconData;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        return _showSnackBar(context, '$text button pressed');
+      },
+      icon: Icon(iconData),
+    );
+  }
+}
+
 class _TextFieldWithToastButton extends StatefulWidget {
   const _TextFieldWithToastButton({super.key});
 
@@ -83,11 +123,7 @@ class __TextFieldWithToastButtonState extends State<_TextFieldWithToastButton> {
         Builder(builder: (context) {
           return ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(_textEditingController.text),
-                ),
-              );
+              return _showSnackBar(context, _textEditingController.text);
             },
             child: const Text('Show as toast'),
           );
